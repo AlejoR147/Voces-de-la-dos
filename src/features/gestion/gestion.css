@@ -1,0 +1,12 @@
+.mg-panels { margin-bottom: 16px; }
+.mg-table { margin-top: 0; }
+
+.occ-row { display: flex; flex-direction: column; gap: 6px; }
+.occ-label { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; }
+.occ-label b { font-weight: 600; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.occ-label span { color: var(--muted); flex: none; }
+
+.status-row { display: flex; align-items: center; justify-content: space-between; font-size: 13.5px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; }
+.status-row b { font: 700 18px 'Poppins', sans-serif; }
+
+.mg-empty { margin-top: 8px; }

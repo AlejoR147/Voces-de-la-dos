@@ -1,0 +1,32 @@
+<div class="page-head">
+  <div>
+    <h1 class="page-title">Mis eventos</h1>
+    <p class="page-sub">Crea eventos y sigue su rendimiento: inscripciones, ocupación e ingresos estimados. Cada evento pasa por revisión de un administrador antes de publicarse.</p>
+  </div>
+  <div class="page-actions">
+    <button class="btn btn-accent" type="button" id="createEventBtn"></button>
+  </div>
+</div>
+
+<div class="kpi-grid" id="mgKpis"></div>
+
+<div class="grid grid-2 mg-panels">
+  <section class="card">
+    <h3 class="card-title">Ocupación por evento</h3>
+    <div class="stack" id="mgOccupancy"></div>
+  </section>
+  <section class="card">
+    <h3 class="card-title">Estado de tus eventos</h3>
+    <div class="stack" id="mgStatus"></div>
+  </section>
+</div>
+
+<section class="card table-card mg-table">
+  <h3 class="card-title">Detalle por evento</h3>
+  <div class="table-scroll">
+    <table class="data">
+      <thead><tr><th>Evento</th><th>Fecha</th><th>Estado</th><th>Inscritos</th><th>Precio</th><th>Ingresos est.</th></tr></thead>
+      <tbody id="mgRows"></tbody>
+    </table>
+  </div>
+</section>

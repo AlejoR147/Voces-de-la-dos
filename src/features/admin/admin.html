@@ -1,21 +1,32 @@
 <div class="page-head">
   <div>
     <h1 class="page-title">Moderación</h1>
-    <p class="page-sub">Aprueba o rechaza proyectos enviados por colectivos juveniles y crea nuevos eventos para la comuna.</p>
+    <p class="page-sub">Revisa los eventos enviados por gestores, aprueba proyectos de colectivos juveniles y publica eventos directamente.</p>
+  </div>
+  <div class="page-actions">
+    <button class="btn btn-accent" type="button" id="createEventBtn"></button>
   </div>
 </div>
 
 <div class="grid grid-2">
+  <div class="stack stack-lg">
+    <section class="card">
+      <div class="row row-between card-head">
+        <h3 class="card-title">Eventos por aprobar</h3>
+        <span class="badge badge-accent" id="pendingEventsBadge">0</span>
+      </div>
+      <div class="stack" id="pendingEvents"></div>
+    </section>
+    <section class="card">
+      <div class="row row-between card-head">
+        <h3 class="card-title">Proyectos pendientes</h3>
+        <span class="badge" id="approvedBadge">0 aprobados</span>
+      </div>
+      <div class="stack" id="pendingList"></div>
+    </section>
+  </div>
   <section class="card">
-    <div class="row row-between card-head">
-      <h3 class="card-title">Proyectos pendientes</h3>
-      <span class="badge" id="approvedBadge">0 aprobados</span>
-    </div>
-    <div class="stack" id="pendingList"></div>
-  </section>
-  <section class="card">
-    <h3 class="card-title">Próximos eventos</h3>
-    <div class="stack" id="eventsMini"></div>
-    <button class="btn btn-soft btn-block create-event-btn" type="button" id="createEventBtn"></button>
+    <h3 class="card-title">Todos los eventos</h3>
+    <div class="stack" id="allEvents"></div>
   </section>
 </div>

@@ -11,4 +11,8 @@
 @import './components/form.css';
 @import './components/modal.css';
 @import './components/activity.css';
+@import './components/event.css';
+@import './components/kpi.css';
+@import './components/table.css';
+@import './components/search.css';
 @import './components/toast.css';

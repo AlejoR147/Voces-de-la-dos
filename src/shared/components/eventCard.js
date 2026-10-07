@@ -1,17 +1,38 @@
 import { escapeHtml } from '../../core/dom.js';
+import { getPlace } from '../../data/places.js';
+import {
+  STATUS_LABELS, dateParts, eventEnrollmentId, eventStats, isPast,
+} from '../../services/events.js';
 import { priceBadge } from './priceBadge.js';
+import { enrollButton } from './enrollButton.js';
 
-function dateBlock(date) {
-  const match = /^(\d{1,2})\s+(\S+)/.exec(date);
-  return match
-    ? `<div class="event-date"><b>${escapeHtml(match[1])}</b>${escapeHtml(match[2])}</div>`
-    : '<div class="event-date">📅</div>';
+function sideControl(event, content, { enroll, status }) {
+  if (status) return `<span class="status ${event.status}">${STATUS_LABELS[event.status]}</span>`;
+  if (!enroll) return '';
+  if (isPast(event)) return '<span class="status fin">Finalizado</span>';
+  const enrolled = content.enrolled.includes(eventEnrollmentId(event));
+  if (!enrolled && eventStats(event, content).spotsLeft === 0) {
+    return '<button class="btn btn-outline btn-sm" type="button" disabled>Cupo lleno</button>';
+  }
+  return enrollButton(eventEnrollmentId(event), enrolled);
 }
 
-export function eventCard({ title, barrio, date, price }) {
-  return `<div class="event">
-    ${dateBlock(date)}
-    <div class="event-body"><b>${escapeHtml(title)}</b><span>${escapeHtml(barrio)} · ${escapeHtml(date)}</span></div>
-    ${priceBadge(price)}
+/**
+ * Event row. Options: `enroll` shows the enrollment control, `status` shows the moderation status instead.
+ */
+export function eventCard(event, content, { enroll = false, status = false } = {}) {
+  const { day, month } = dateParts(event.date);
+  const { registered } = eventStats(event, content);
+  const place = getPlace(event.placeId);
+  const where = place ? place.name : event.barrio;
+  const spots = event.status === 'approved' ? ` · ${registered}/${event.capacity} cupos` : ` · cupo ${event.capacity}`;
+
+  return `<div class="event${isPast(event) ? ' event--past' : ''}">
+    <div class="event-date"><b>${day}</b>${month}</div>
+    <div class="event-body">
+      <b>${escapeHtml(event.title)}</b>
+      <span>${escapeHtml(where)} · ${escapeHtml(event.barrio)}${spots}</span>
+    </div>
+    <div class="event-side">${priceBadge(event.price)}${sideControl(event, content, { enroll, status })}</div>
   </div>`;
 }

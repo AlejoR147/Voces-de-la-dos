@@ -1,7 +1,7 @@
 import './retos.css';
 import template from './retos.html?raw';
 import { $, delegate, escapeHtml } from '../../core/dom.js';
-import { appStore, isCreator } from '../../state/appStore.js';
+import { appStore, canCreateChallenges } from '../../state/appStore.js';
 import { addTeam, contentStore, toggleTeamMembership } from '../../state/contentStore.js';
 import { INITIAL_TEAMS } from '../../data/teams.js';
 import { initialOf } from '../../utils/format.js';
@@ -46,15 +46,15 @@ function mount(section) {
     list.innerHTML = [...customTeams, ...INITIAL_TEAMS]
       .map((team) => teamCard({ members: [], icon: '✨', ...team }, { joined: joinedTeams.includes(team.id), user }))
       .join('');
-    createBtn.hidden = !isCreator();
+    createBtn.hidden = !canCreateChallenges();
   }
 
   const challengeModal = createFormModal({
     title: 'Crear nuevo reto comunitario',
     submitLabel: 'Crear reto',
     fields: [
-      { name: 'title', placeholder: 'Nombre del reto (ej. Festival de música)' },
-      { name: 'place', placeholder: 'Lugar o barrio' },
+      { name: 'title', label: 'Nombre del reto', placeholder: 'Ej. Festival de música', required: true },
+      { name: 'place', label: 'Lugar o barrio', placeholder: 'Ej. Cancha La Frontera' },
     ],
     onSubmit: ({ title, place }) => {
       addTeam({
@@ -72,7 +72,7 @@ function mount(section) {
     const joined = toggleTeamMembership(button.dataset.team);
     showToast(joined ? 'Te uniste al equipo. La IA reajustará el reparto de roles.' : 'Saliste del equipo');
   });
-  createBtn.addEventListener('click', challengeModal.open);
+  createBtn.addEventListener('click', () => challengeModal.open());
   appStore.subscribe(render);
   contentStore.subscribe(render);
   render();

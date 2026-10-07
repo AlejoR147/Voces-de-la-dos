@@ -14,7 +14,7 @@ export function getUser() {
 
 export function registerUser({ name, role, age, barrio, availability, interests }) {
   appStore.setState({
-    user: { name, role, age, barrio, availability, interests },
+    user: { id: `user-${Date.now()}`, name, role, age, barrio, availability, interests },
     affinities: calculateAffinities(interests),
   });
 }
@@ -32,9 +32,9 @@ export function hasRole(...roles) {
   return Boolean(user) && roles.includes(user.role);
 }
 
-export function isCreator() {
-  return hasRole(ROLES.CREATOR, ROLES.ADMIN);
-}
+export const isManager = () => hasRole(ROLES.MANAGER);
+export const isAdmin = () => hasRole(ROLES.ADMIN);
+export const canCreateChallenges = () => hasRole(ROLES.MANAGER, ROLES.ADMIN);
 
 export function resetApp() {
   Object.values(STORAGE_KEYS).forEach(removeKey);

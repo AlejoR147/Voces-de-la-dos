@@ -22,9 +22,3 @@ export const INTEREST_SHARE = Object.freeze([
   { label: 'Danza', share: 15, color: '#B39DDB' },
   { label: 'Videojuegos', share: 10, color: '#90CAF9' },
 ]);
-
-export const RECENT_EVENTS = Object.freeze([
-  { name: 'Festival de música barrial', barrio: 'Santa Cruz', date: '12 jul', enrolled: 45, price: 8000, finished: false },
-  { name: 'Jornada de muralismo', barrio: 'La Frontera', date: '20 jul', enrolled: 12, price: 0, finished: false },
-  { name: 'Concurso de fotografía móvil', barrio: 'Popular', date: '02 jul', enrolled: 38, price: 0, finished: true },
-]);

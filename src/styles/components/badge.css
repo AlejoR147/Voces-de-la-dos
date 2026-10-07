@@ -20,3 +20,6 @@
 .status.fin { background: #EEE; color: #777; }
 .status.paid { background: var(--orange-soft); color: #C2540F; }
 .status.free { background: var(--green-soft); color: var(--green); }
+.status.pending { background: var(--orange-soft); color: #C2540F; }
+.status.approved { background: var(--green-soft); color: var(--green); }
+.status.rejected { background: var(--red-soft); color: var(--red); }

@@ -2,10 +2,13 @@ import './impacto.css';
 import template from './impacto.html?raw';
 import { $, escapeHtml } from '../../core/dom.js';
 import { NEIGHBORHOODS } from '../../data/neighborhoods.js';
+import { ROLES } from '../../config/constants.js';
 import {
-  INTEREST_SHARE, KPIS, RECENT_EVENTS, ROLE_SPLIT, ROLE_SPLIT_NOTE,
+  INTEREST_SHARE, KPIS, ROLE_SPLIT, ROLE_SPLIT_NOTE,
   TOTAL_YOUTH, YOUTH_PER_PARTICIPATION_POINT,
 } from '../../data/dashboard.js';
+import { contentStore } from '../../state/contentStore.js';
+import { eventStats, formatEventDate, isPast, publishedEvents } from '../../services/events.js';
 import { formatNumber, formatPrice, isFree } from '../../utils/format.js';
 import { showToast } from '../../shared/components/toast.js';
 import { icon } from '../../shared/icons.js';
@@ -31,18 +34,31 @@ function donut(segments, note = '') {
     <div class="legend">${legend}${note ? `<div class="note">${note}</div>` : ''}</div>`;
 }
 
-function eventRow({ name, barrio, date, enrolled, price, finished }) {
+function reportRows() {
+  const content = contentStore.getState();
+  return publishedEvents(content).reverse().map((event) => ({
+    name: event.title,
+    organizer: event.ownerName,
+    barrio: event.barrio,
+    date: formatEventDate(event.date),
+    enrolled: eventStats(event, content).registered,
+    price: event.price,
+    finished: isPast(event),
+  }));
+}
+
+function eventRow({ name, organizer, barrio, date, enrolled, price, finished }) {
   return `<tr>
-    <td>${escapeHtml(name)}</td><td>${escapeHtml(barrio)}</td><td>${date}</td><td>${enrolled}</td>
+    <td>${escapeHtml(name)}</td><td>${escapeHtml(organizer)}</td><td>${escapeHtml(barrio)}</td><td>${date}</td><td>${enrolled}</td>
     <td><span class="status ${isFree(price) ? 'free' : 'paid'}">${formatPrice(price)}</span></td>
     <td><span class="status ${finished ? 'fin' : 'act'}">${finished ? 'Finalizado' : 'Activo'}</span></td>
   </tr>`;
 }
 
 function downloadReport() {
-  const header = ['Evento', 'Barrio', 'Fecha', 'Inscritos', 'Precio', 'Estado'];
-  const rows = RECENT_EVENTS.map(({ name, barrio, date, enrolled, price, finished }) => (
-    [name, barrio, date, enrolled, formatPrice(price), finished ? 'Finalizado' : 'Activo']
+  const header = ['Evento', 'Organiza', 'Barrio', 'Fecha', 'Inscritos', 'Precio', 'Estado'];
+  const rows = reportRows().map(({ name, organizer, barrio, date, enrolled, price, finished }) => (
+    [name, organizer, barrio, date, enrolled, formatPrice(price), finished ? 'Finalizado' : 'Activo']
   ));
   const csv = [header, ...rows]
     .map((row) => row.map((cell) => `"${String(cell).replaceAll('"', '""')}"`).join(','))
@@ -62,10 +78,18 @@ function mount(section) {
   const exportBtn = $('#exportBtn', section);
 
   exportBtn.innerHTML = `${icon('download', 16)} Exportar reporte`;
-  $('#kpiGrid', section).innerHTML = KPIS.map(kpiCard).join('');
   $('#roleDonut', section).innerHTML = donut(ROLE_SPLIT, ROLE_SPLIT_NOTE);
   $('#interestDonut', section).innerHTML = donut(INTEREST_SHARE);
-  $('#eventsTableBody', section).innerHTML = RECENT_EVENTS.map(eventRow).join('');
+
+  function renderLive() {
+    const content = contentStore.getState();
+    const activeEvents = publishedEvents(content).filter((event) => !isPast(event)).length;
+    $('#kpiGrid', section).innerHTML = KPIS
+      .map((kpiData) => (kpiData.id === 'events' ? { ...kpiData, value: activeEvents } : kpiData))
+      .map(kpiCard)
+      .join('');
+    $('#eventsTableBody', section).innerHTML = reportRows().map(eventRow).join('');
+  }
 
   barrioFilter.innerHTML = '<option value="todos">Todos los barrios</option>'
     + NEIGHBORHOODS.map(({ name }, index) => `<option value="${index}">${escapeHtml(name)}</option>`).join('');
@@ -98,7 +122,9 @@ function mount(section) {
   exportBtn.addEventListener('click', downloadReport);
 
   screen.onShow = () => renderBars(highlighted);
+  contentStore.subscribe(renderLive);
+  renderLive();
   renderBars();
 }
 
-export const screen = { id: 'impacto', label: 'Impacto', icon: icon('chart'), nav: true, access: 'auth', mount };
+export const screen = { id: 'impacto', label: 'Impacto', icon: icon('chart'), nav: true, access: [ROLES.ADMIN], mount };

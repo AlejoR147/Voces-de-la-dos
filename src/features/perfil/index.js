@@ -7,26 +7,31 @@ import { NEIGHBORHOODS } from '../../data/neighborhoods.js';
 import { getPlace } from '../../data/places.js';
 import { appStore, resetApp, updateUser } from '../../state/appStore.js';
 import { contentStore } from '../../state/contentStore.js';
+import { allEvents } from '../../services/events.js';
 import { showToast } from '../../shared/components/toast.js';
 import { icon } from '../../shared/icons.js';
 
 const ROLE_HINTS = {
   [ROLES.CONSUMER]: 'Descubre actividades, inscríbete y únete a equipos.',
-  [ROLES.CREATOR]: 'Además puedes publicar talleres y crear retos.',
-  [ROLES.ADMIN]: 'Modo demostración: habilita la sección de Moderación.',
+  [ROLES.MANAGER]: 'Crea eventos, recibe inscripciones y sigue el dashboard de cada uno. Tus eventos pasan por revisión.',
+  [ROLES.ADMIN]: 'Aprueba eventos y proyectos, publica eventos y ve el dashboard global de la comuna.',
 };
 
 const toggleItem = (list, item) => (list.includes(item) ? list.filter((value) => value !== item) : [...list, item]);
 
-function enrollmentLabel(id, customActivities) {
+function enrollmentLabel(id, events) {
   if (id.startsWith('place:')) {
     const place = getPlace(id.slice('place:'.length));
     return place ? { name: place.name, kind: 'Lugar' } : null;
   }
+  if (id.startsWith('event:')) {
+    const event = events.find((item) => item.id === id.slice('event:'.length));
+    return event ? { name: event.title, kind: 'Evento' } : null;
+  }
   const interestKey = id.startsWith('activity:') ? id.slice('activity:'.length) : null;
-  if (interestKey && INTERESTS[interestKey]) return { name: INTERESTS[interestKey].activity.title, kind: 'Actividad' };
-  const custom = customActivities.find((activity) => activity.id === id);
-  return custom ? { name: custom.title, kind: 'Actividad' } : null;
+  return interestKey && INTERESTS[interestKey]
+    ? { name: INTERESTS[interestKey].activity.title, kind: 'Actividad' }
+    : null;
 }
 
 function chips(options, selected, attribute) {
@@ -78,9 +83,10 @@ function mount(section) {
   }
 
   function renderEnrollments() {
-    const { enrolled, customActivities } = contentStore.getState();
-    const items = enrolled
-      .map((id) => enrollmentLabel(id, customActivities))
+    const content = contentStore.getState();
+    const events = allEvents(content);
+    const items = content.enrolled
+      .map((id) => enrollmentLabel(id, events))
       .filter(Boolean)
       .map(({ name, kind }) => `<div class="enrollment"><b>${escapeHtml(name)}</b><span class="badge">${kind}</span></div>`);
     els.enrollments.innerHTML = items.join('')

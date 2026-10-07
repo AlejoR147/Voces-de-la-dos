@@ -86,6 +86,8 @@
 .detail-close { width: 32px; height: 32px; border-radius: 10px; flex: none; }
 .detail-line { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--muted); }
 .detail-line .icon { color: var(--purple); }
+.detail-link { color: var(--purple); font-weight: 600; }
+.detail-link:hover { text-decoration: underline; }
 .detail-desc { font-size: 13px; line-height: 1.5; }
 .route-info {
   display: flex; align-items: center; gap: 8px; font-size: 13px; padding: 10px 12px; border-radius: 12px;

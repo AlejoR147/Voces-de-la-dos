@@ -10,6 +10,7 @@ import {
   distanceMeters, formatDistance, getCurrentPosition, googleMapsDirectionsUrl,
 } from '../../services/geo.js';
 import { getWalkingRoute } from '../../services/routing.js';
+import { isPast, publishedEvents } from '../../services/events.js';
 import { matchesPriceFilter, normalizeText } from '../../utils/format.js';
 import { mountChipGroup } from '../../shared/components/chipGroup.js';
 import { priceBadge } from '../../shared/components/priceBadge.js';
@@ -53,7 +54,10 @@ function placeItemHtml(place, origin, active) {
   </button>`;
 }
 
-function detailHtml(place, { origin, route, routing, enrolled }) {
+function detailHtml(place, { origin, route, routing, enrolled, upcoming }) {
+  const eventsLine = upcoming
+    ? `<a class="detail-line detail-link" href="#eventos">${icon('calendar', 16)}<span>${upcoming} ${upcoming === 1 ? 'evento próximo' : 'eventos próximos'} aquí</span></a>`
+    : '';
   const category = PLACE_CATEGORIES[place.category];
   const distance = formatDistance(distanceMeters(origin, place));
   const routeInfo = route
@@ -69,6 +73,7 @@ function detailHtml(place, { origin, route, routing, enrolled }) {
     </div>
     <div class="detail-line">${icon('clock', 16)}<span>${escapeHtml(place.meta)}</span></div>
     <div class="detail-line">${icon('pin', 16)}<span>${escapeHtml(place.barrio)} · a ${distance} de ${escapeHtml(origin.live ? 'tu ubicación' : origin.label)}</span></div>
+    ${eventsLine}
     <p class="detail-desc">${escapeHtml(place.desc)}</p>
     ${routeInfo}
     <div class="detail-actions">
@@ -130,6 +135,8 @@ function mount(section) {
       route: state.route,
       routing: state.routing,
       enrolled: contentStore.getState().enrolled.includes(`place:${place.id}`),
+      upcoming: publishedEvents(contentStore.getState())
+        .filter((event) => event.placeId === place.id && !isPast(event)).length,
     });
   }
 
