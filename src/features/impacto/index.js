@@ -7,7 +7,7 @@ import {
   INTEREST_SHARE, KPIS, ROLE_SPLIT, ROLE_SPLIT_NOTE,
   TOTAL_YOUTH, YOUTH_PER_PARTICIPATION_POINT,
 } from '../../data/dashboard.js';
-import { contentStore } from '../../state/contentStore.js';
+import { contentStore, getContent } from '../../state/contentStore.js';
 import { eventStats, formatEventDate, isPast, publishedEvents } from '../../services/events.js';
 import { formatNumber, formatPrice, isFree } from '../../utils/format.js';
 import { showToast } from '../../shared/components/toast.js';
@@ -35,7 +35,7 @@ function donut(segments, note = '') {
 }
 
 function reportRows() {
-  const content = contentStore.getState();
+  const content = getContent();
   return publishedEvents(content).reverse().map((event) => ({
     name: event.title,
     organizer: event.ownerName,
@@ -82,7 +82,7 @@ function mount(section) {
   $('#interestDonut', section).innerHTML = donut(INTEREST_SHARE);
 
   function renderLive() {
-    const content = contentStore.getState();
+    const content = getContent();
     const activeEvents = publishedEvents(content).filter((event) => !isPast(event)).length;
     $('#kpiGrid', section).innerHTML = KPIS
       .map((kpiData) => (kpiData.id === 'events' ? { ...kpiData, value: activeEvents } : kpiData))

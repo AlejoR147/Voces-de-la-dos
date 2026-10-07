@@ -5,7 +5,8 @@ import template from './mapa.html?raw';
 import { $, escapeHtml } from '../../core/dom.js';
 import { MAP_CONFIG, PRICE_FILTERS } from '../../config/constants.js';
 import { PLACES, PLACE_CATEGORIES, getPlace } from '../../data/places.js';
-import { contentStore } from '../../state/contentStore.js';
+import { isConsumer } from '../../state/appStore.js';
+import { contentStore, getContent } from '../../state/contentStore.js';
 import {
   distanceMeters, formatDistance, getCurrentPosition, googleMapsDirectionsUrl,
 } from '../../services/geo.js';
@@ -54,7 +55,7 @@ function placeItemHtml(place, origin, active) {
   </button>`;
 }
 
-function detailHtml(place, { origin, route, routing, enrolled, upcoming }) {
+function detailHtml(place, { origin, route, routing, enrolled, upcoming, canEnroll }) {
   const eventsLine = upcoming
     ? `<a class="detail-line detail-link" href="#eventos">${icon('calendar', 16)}<span>${upcoming} ${upcoming === 1 ? 'evento próximo' : 'eventos próximos'} aquí</span></a>`
     : '';
@@ -79,7 +80,7 @@ function detailHtml(place, { origin, route, routing, enrolled, upcoming }) {
     <div class="detail-actions">
       <button type="button" class="btn btn-accent btn-sm" data-route${routing ? ' disabled' : ''}>${icon('route', 16)} ${routing ? 'Calculando…' : route ? 'Quitar ruta' : 'Cómo llegar'}</button>
       <a class="btn btn-outline btn-sm" href="${googleMapsDirectionsUrl(place)}" target="_blank" rel="noopener">${icon('external', 16)} Google Maps</a>
-      ${enrollButton(`place:${place.id}`, enrolled)}
+      ${canEnroll ? enrollButton(`place:${place.id}`, enrolled) : ''}
     </div>`;
 }
 
@@ -134,8 +135,9 @@ function mount(section) {
       origin: state.origin,
       route: state.route,
       routing: state.routing,
-      enrolled: contentStore.getState().enrolled.includes(`place:${place.id}`),
-      upcoming: publishedEvents(contentStore.getState())
+      enrolled: getContent().enrolled.includes(`place:${place.id}`),
+      canEnroll: isConsumer(),
+      upcoming: publishedEvents(getContent())
         .filter((event) => event.placeId === place.id && !isPast(event)).length,
     });
   }
@@ -281,6 +283,7 @@ function mount(section) {
   function activate() {
     if (!state.map) createMap();
     requestAnimationFrame(() => state.map.invalidateSize());
+    renderDetail();
   }
 
   els.list.addEventListener('click', (event) => {

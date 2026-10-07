@@ -1,46 +1,102 @@
 import './bienvenida.css';
 import template from './bienvenida.html?raw';
 import { $, delegate, escapeHtml } from '../../core/dom.js';
-import { AVAILABILITY_OPTIONS, PUBLIC_SCREEN, ROLES, ROLE_OPTIONS } from '../../config/constants.js';
+import {
+  ACCOUNT_TYPE_OPTIONS, AVAILABILITY_OPTIONS, ORG_TYPES, PUBLIC_SCREEN, ROLES, SECURITY,
+} from '../../config/constants.js';
 import { INTERESTS } from '../../data/interests.js';
 import { NEIGHBORHOODS } from '../../data/neighborhoods.js';
-import { registerUser } from '../../state/appStore.js';
+import { registerAccount, validateEmail, validatePassword } from '../../services/auth.js';
 import { showToast } from '../../shared/components/toast.js';
+import { bindPasswordToggle } from '../../shared/components/passwordField.js';
 import { icon } from '../../shared/icons.js';
 
-const STEPS = [
-  { title: '¿Qué quieres hacer?', sub: 'Elige cómo quieres vivir la cultura de tu barrio. Podrás cambiarlo después.' },
-  { title: 'Cuéntanos sobre ti', sub: 'Solo lo esencial para construir tu perfil.' },
-  { title: '¿Qué te apasiona?', sub: 'Elige uno o varios intereses. Con eso ordenamos las actividades para ti.' },
-];
+const STEP_COUNT = 4;
 
 const initialDraft = () => ({
   role: ROLES.CONSUMER,
   name: '',
+  email: '',
+  password: '',
   age: 16,
   barrio: NEIGHBORHOODS[1].name,
   availability: [AVAILABILITY_OPTIONS[0]],
   interests: [],
+  orgType: ORG_TYPES[0],
+  contactName: '',
+  phone: '',
+  taxId: '',
+  website: '',
+  description: '',
 });
 
+const isOrg = (draft) => draft.role === ROLES.MANAGER;
 const toggleItem = (list, item) => (list.includes(item) ? list.filter((value) => value !== item) : [...list, item]);
 
+function stepCopy(step, draft) {
+  const org = isOrg(draft);
+  return [
+    { title: '¿Cómo vas a usar la plataforma?', sub: 'Elige el tipo de cuenta. No se puede cambiar después.' },
+    org
+      ? { title: 'Cuenta de la organización', sub: 'Con este correo y contraseña ingresará el equipo responsable de la organización.' }
+      : { title: 'Crea tu cuenta', sub: 'Tu correo y una contraseña para volver a entrar.' },
+    org
+      ? { title: 'Cuéntanos sobre la organización', sub: 'Esta información ayuda a la administración a revisar tus eventos.' }
+      : { title: 'Cuéntanos sobre ti', sub: 'Solo lo esencial para construir tu perfil.' },
+    org
+      ? { title: '¿Qué tipo de eventos organizan?', sub: 'Elige una o varias categorías.' }
+      : { title: '¿Qué te apasiona?', sub: 'Elige uno o varios intereses. Con eso ordenamos las actividades para ti.' },
+  ][step];
+}
+
+function textField({ field, label, value, type = 'text', placeholder = '', autocomplete = 'off', maxlength = 80, hint = '', extra = '', className = '' }) {
+  return `<div class="field ${className}"><label class="field-label" for="wz-${field}">${label}</label>
+    <input class="input" id="wz-${field}" data-field="${field}" type="${type}" value="${escapeHtml(value)}" placeholder="${escapeHtml(placeholder)}" autocomplete="${autocomplete}" maxlength="${maxlength}"${extra}>
+    ${hint ? `<span class="field-hint">${hint}</span>` : ''}</div>`;
+}
+
+function barrioSelect(draft) {
+  return `<div class="field"><label class="field-label" for="wz-barrio">${isOrg(draft) ? 'Barrio sede' : 'Barrio'}</label>
+    <select id="wz-barrio" data-field="barrio">${NEIGHBORHOODS.map(({ name }) => `<option${name === draft.barrio ? ' selected' : ''}>${escapeHtml(name)}</option>`).join('')}</select></div>`;
+}
+
 function stepBody(step, draft) {
+  const org = isOrg(draft);
+
   if (step === 0) {
-    return `<div class="role-options">${ROLE_OPTIONS.map(({ value, icon: emoji, title, desc }) => `
+    return `<div class="role-options">${ACCOUNT_TYPE_OPTIONS.map(({ value, icon: emoji, title, desc }) => `
       <button type="button" class="role-option${draft.role === value ? ' active' : ''}" data-role="${value}">
         <span class="role-icon">${emoji}</span><b>${title}</b><span>${desc}</span>
       </button>`).join('')}</div>`;
   }
 
   if (step === 1) {
-    return `
-      <div class="field"><label class="field-label" for="wzName">¿Cómo te llamas?</label>
-        <input class="input" id="wzName" type="text" maxlength="40" autocomplete="given-name" placeholder="Tu nombre o apodo" value="${escapeHtml(draft.name)}"></div>
-      <div class="field"><div class="field-inline"><label class="field-label" for="wzAge">Edad</label><span class="field-value" id="wzAgeValue">${draft.age} años</span></div>
-        <input type="range" id="wzAge" min="12" max="28" value="${draft.age}"></div>
-      <div class="field"><label class="field-label" for="wzBarrio">Barrio</label>
-        <select id="wzBarrio">${NEIGHBORHOODS.map(({ name }) => `<option${name === draft.barrio ? ' selected' : ''}>${escapeHtml(name)}</option>`).join('')}</select></div>
+    return `${textField({ field: 'name', label: org ? 'Nombre de la organización' : 'Tu nombre o apodo', value: draft.name, autocomplete: org ? 'organization' : 'given-name', maxlength: 60 })}
+      ${textField({ field: 'email', label: org ? 'Correo de la organización' : 'Correo electrónico', value: draft.email, type: 'email', autocomplete: 'email', maxlength: 120 })}
+      <div class="field"><label class="field-label" for="wz-password">Contraseña</label>
+        <div class="password-field"><input class="input" id="wz-password" data-field="password" type="password" autocomplete="new-password" maxlength="128" value="${escapeHtml(draft.password)}">
+        <button type="button" class="password-toggle" id="wzToggle"></button></div>
+        <span class="field-hint">Mínimo ${SECURITY.passwordMinLength} caracteres, con letras y números.</span></div>`;
+  }
+
+  if (step === 2 && org) {
+    return `<div class="form-grid">
+      <div class="field"><label class="field-label" for="wz-orgType">Tipo de organización</label>
+        <select id="wz-orgType" data-field="orgType">${ORG_TYPES.map((type) => `<option${type === draft.orgType ? ' selected' : ''}>${type}</option>`).join('')}</select></div>
+      ${barrioSelect(draft)}
+      ${textField({ field: 'contactName', label: 'Persona responsable', value: draft.contactName, autocomplete: 'name', maxlength: 60 })}
+      ${textField({ field: 'phone', label: 'Teléfono de contacto', value: draft.phone, type: 'tel', autocomplete: 'tel', maxlength: 20, hint: 'Opcional' })}
+      ${textField({ field: 'taxId', label: 'NIT o documento', value: draft.taxId, maxlength: 20, hint: 'Opcional', className: '' })}
+      ${textField({ field: 'website', label: 'Sitio web o red social', value: draft.website, type: 'url', placeholder: 'https://', maxlength: 120, hint: 'Opcional' })}
+      <div class="field span-2"><label class="field-label" for="wz-description">¿A qué se dedica?</label>
+        <textarea class="input" id="wz-description" data-field="description" maxlength="300" placeholder="Describe brevemente la organización y sus actividades">${escapeHtml(draft.description)}</textarea></div>
+    </div>`;
+  }
+
+  if (step === 2) {
+    return `<div class="field"><div class="field-inline"><label class="field-label" for="wz-age">Edad</label><span class="field-value" id="wzAgeValue">${draft.age} años</span></div>
+        <input type="range" id="wz-age" data-field="age" min="12" max="28" value="${draft.age}"></div>
+      ${barrioSelect(draft)}
       <div class="field"><span class="field-label">Disponibilidad</span>
         <div class="chip-group">${AVAILABILITY_OPTIONS.map((option) => `<button type="button" class="chip${draft.availability.includes(option) ? ' selected' : ''}" data-availability="${option}">${option}</button>`).join('')}</div></div>`;
   }
@@ -50,17 +106,67 @@ function stepBody(step, draft) {
   )).join('')}</div>`;
 }
 
-function wizardHtml(step, draft) {
-  const last = step === STEPS.length - 1;
+function validate(step, draft) {
+  if (step === 1) {
+    if (draft.name.trim().length < 2) return { error: isOrg(draft) ? 'Escribe el nombre de la organización.' : 'Cuéntanos cómo te llamas.', field: 'name' };
+    const emailError = validateEmail(draft.email);
+    if (emailError) return { error: emailError, field: 'email' };
+    const passwordError = validatePassword(draft.password);
+    if (passwordError) return { error: passwordError, field: 'password' };
+  }
+  if (step === 2 && isOrg(draft)) {
+    if (draft.contactName.trim().length < 2) return { error: 'Indica la persona responsable.', field: 'contactName' };
+    if (draft.description.trim().length < 10) return { error: 'Describe brevemente a qué se dedica la organización.', field: 'description' };
+    if (draft.website.trim()) {
+      try {
+        if (!['http:', 'https:'].includes(new URL(draft.website.trim()).protocol)) throw new Error('protocol');
+      } catch {
+        return { error: 'El sitio web debe empezar por http:// o https://', field: 'website' };
+      }
+    }
+  }
+  if (step === STEP_COUNT - 1 && draft.interests.length === 0) {
+    return { error: isOrg(draft) ? 'Elige al menos una categoría.' : 'Elige al menos un interés.' };
+  }
+  return null;
+}
+
+function buildProfile(draft) {
+  if (isOrg(draft)) {
+    return {
+      name: draft.name.trim(),
+      orgType: draft.orgType,
+      contactName: draft.contactName.trim(),
+      phone: draft.phone.trim(),
+      taxId: draft.taxId.trim(),
+      barrio: draft.barrio,
+      website: draft.website.trim(),
+      description: draft.description.trim(),
+      interests: draft.interests,
+    };
+  }
+  return {
+    name: draft.name.trim(),
+    age: draft.age,
+    barrio: draft.barrio,
+    availability: draft.availability,
+    interests: draft.interests,
+  };
+}
+
+function wizardHtml(step, draft, { error, busy }) {
+  const last = step === STEP_COUNT - 1;
+  const { title, sub } = stepCopy(step, draft);
   return `<div class="card wizard">
-    <div class="wizard-top"><span class="wizard-step">Paso ${step + 1} de ${STEPS.length}</span></div>
-    <div class="progress"><span style="width:${((step + 1) / STEPS.length) * 100}%"></span></div>
-    <h2>${STEPS[step].title}</h2>
-    <p class="wizard-sub">${STEPS[step].sub}</p>
+    <div class="wizard-top"><span class="wizard-step">Paso ${step + 1} de ${STEP_COUNT}</span></div>
+    <div class="progress"><span style="width:${((step + 1) / STEP_COUNT) * 100}%"></span></div>
+    <h2>${title}</h2>
+    <p class="wizard-sub">${sub}</p>
     <div class="wizard-body">${stepBody(step, draft)}</div>
+    <p class="form-error wizard-error" role="alert"${error ? '' : ' hidden'}>${escapeHtml(error)}</p>
     <div class="wizard-footer">
       <button type="button" class="btn btn-outline" data-back>${icon('back', 16)} ${step === 0 ? 'Inicio' : 'Atrás'}</button>
-      <button type="button" class="btn btn-primary" data-next>${last ? 'Crear mi perfil' : 'Continuar'} ${icon(last ? 'check' : 'arrow', 16)}</button>
+      <button type="button" class="btn btn-primary" data-next${busy ? ' disabled' : ''}>${last ? (busy ? 'Creando…' : 'Crear cuenta') : 'Continuar'} ${icon(last ? 'check' : 'arrow', 16)}</button>
     </div>
   </div>`;
 }
@@ -72,14 +178,26 @@ function mount(section) {
   const onboarding = $('#onboarding', section);
   let step = 0;
   let draft = initialDraft();
+  let error = '';
+  let busy = false;
 
   function render() {
-    onboarding.innerHTML = wizardHtml(step, draft);
+    onboarding.innerHTML = wizardHtml(step, draft, { error, busy });
+    const toggle = $('#wzToggle', onboarding);
+    if (toggle) bindPasswordToggle($('#wz-password', onboarding), toggle);
+  }
+
+  function setError(message, field) {
+    error = message;
+    render();
+    if (field) $(`[data-field="${field}"]`, onboarding)?.focus();
   }
 
   function open() {
     step = 0;
     draft = initialDraft();
+    error = '';
+    busy = false;
     landing.hidden = true;
     onboarding.hidden = false;
     render();
@@ -89,29 +207,44 @@ function mount(section) {
   function close() {
     onboarding.hidden = true;
     landing.hidden = false;
+    draft = initialDraft();
   }
 
-  function next() {
-    if (step === 1 && !draft.name.trim()) {
-      showToast('Cuéntanos cómo te llamas para continuar');
-      $('#wzName', onboarding)?.focus();
+  async function next() {
+    if (busy) return;
+    const problem = validate(step, draft);
+    if (problem) {
+      setError(problem.error, problem.field);
       return;
     }
-    if (step === STEPS.length - 1) {
-      if (draft.interests.length === 0) {
-        showToast('Elige al menos un interés');
-        return;
-      }
-      registerUser({ ...draft, name: draft.name.trim() });
-      showToast(`¡Bienvenido, ${draft.name.trim()}!`);
-      close();
+    error = '';
+
+    if (step < STEP_COUNT - 1) {
+      step += 1;
+      render();
       return;
     }
-    step += 1;
+
+    busy = true;
     render();
+    const result = await registerAccount({
+      email: draft.email,
+      password: draft.password,
+      role: draft.role,
+      profile: buildProfile(draft),
+    });
+    busy = false;
+    if (!result.ok) {
+      step = 1;
+      setError(result.error, result.field);
+      return;
+    }
+    showToast(`¡Bienvenido, ${draft.name.trim()}!`);
+    close();
   }
 
   function back() {
+    error = '';
     if (step === 0) {
       close();
       return;
@@ -135,19 +268,28 @@ function mount(section) {
     draft.interests = toggleItem(draft.interests, chip.dataset.interest);
     chip.classList.toggle('selected');
   });
-  onboarding.addEventListener('input', (event) => {
-    if (event.target.id === 'wzName') draft.name = event.target.value;
-    if (event.target.id === 'wzAge') {
-      draft.age = Number(event.target.value);
-      $('#wzAgeValue', onboarding).textContent = `${draft.age} años`;
+
+  const readField = (event) => {
+    const { field } = event.target.dataset;
+    if (!field) return;
+    draft[field] = field === 'age' ? Number(event.target.value) : event.target.value;
+    if (field === 'age') $('#wzAgeValue', onboarding).textContent = `${draft.age} años`;
+  };
+  onboarding.addEventListener('input', readField);
+  onboarding.addEventListener('change', readField);
+  onboarding.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter' && event.target.tagName === 'INPUT' && event.target.type !== 'range') {
+      event.preventDefault();
+      next();
     }
   });
-  onboarding.addEventListener('change', (event) => {
-    if (event.target.id === 'wzBarrio') draft.barrio = event.target.value;
-  });
-  onboarding.addEventListener('keydown', (event) => {
-    if (event.key === 'Enter' && event.target.id === 'wzName') next();
-  });
+
+  screen.onShow = () => {
+    if (location.hash === '#bienvenida' && sessionStorage.getItem('scvd:open-signup')) {
+      sessionStorage.removeItem('scvd:open-signup');
+      open();
+    }
+  };
 }
 
 export const screen = {

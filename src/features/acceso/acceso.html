@@ -1,0 +1,23 @@
+<div class="auth-wrap">
+  <form class="card auth-card" id="loginForm" novalidate>
+    <h1 class="auth-title">Iniciar sesión</h1>
+    <p class="auth-sub">Entra con tu cuenta de persona u organización. El personal de administración también accede aquí.</p>
+
+    <div class="field">
+      <label class="field-label" for="loginEmail">Correo electrónico</label>
+      <input class="input" id="loginEmail" name="email" type="email" autocomplete="username" inputmode="email" maxlength="120" required>
+    </div>
+    <div class="field">
+      <label class="field-label" for="loginPassword">Contraseña</label>
+      <div class="password-field">
+        <input class="input" id="loginPassword" name="password" type="password" autocomplete="current-password" maxlength="128" required>
+        <button type="button" class="password-toggle" id="loginToggle" aria-label="Mostrar contraseña"></button>
+      </div>
+    </div>
+
+    <p class="form-error" id="loginError" role="alert" hidden></p>
+
+    <button class="btn btn-primary btn-lg btn-block" type="submit" id="loginSubmit">Entrar</button>
+    <p class="auth-foot">¿Aún no tienes cuenta? <a href="#bienvenida" data-signup>Crear cuenta</a></p>
+  </form>
+</div>

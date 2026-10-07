@@ -22,3 +22,4 @@
 .avatars .a.blue { background: var(--blue); }
 .avatars .a.orange { background: var(--orange); }
 .avatars .a.me { background: var(--ink); }
+.avatars .a.more { background: var(--muted); }

@@ -1,7 +1,7 @@
 <div class="page-head">
   <div>
     <h1 class="page-title">Moderación</h1>
-    <p class="page-sub">Revisa los eventos enviados por gestores, aprueba proyectos de colectivos juveniles y publica eventos directamente.</p>
+    <p class="page-sub">Revisa los eventos enviados por las organizaciones, aprueba proyectos de colectivos juveniles y publica eventos directamente.</p>
   </div>
   <div class="page-actions">
     <button class="btn btn-accent" type="button" id="createEventBtn"></button>
@@ -25,8 +25,17 @@
       <div class="stack" id="pendingList"></div>
     </section>
   </div>
-  <section class="card">
-    <h3 class="card-title">Todos los eventos</h3>
-    <div class="stack" id="allEvents"></div>
-  </section>
+  <div class="stack stack-lg">
+    <section class="card">
+      <h3 class="card-title">Todos los eventos</h3>
+      <div class="stack" id="allEvents"></div>
+    </section>
+    <section class="card">
+      <div class="row row-between card-head">
+        <h3 class="card-title">Registro de actividad</h3>
+        <span class="badge" id="accountsBadge"></span>
+      </div>
+      <ul class="audit" id="auditLog"></ul>
+    </section>
+  </div>
 </div>

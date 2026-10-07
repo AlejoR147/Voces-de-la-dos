@@ -2,7 +2,7 @@ import './inicio.css';
 import template from './inicio.html?raw';
 import { $, escapeHtml } from '../../core/dom.js';
 import { appStore } from '../../state/appStore.js';
-import { contentStore } from '../../state/contentStore.js';
+import { contentStore, getContent } from '../../state/contentStore.js';
 import { INTERESTS } from '../../data/interests.js';
 import { EVENT_STATUS } from '../../data/events.js';
 import { ROLES, ROLE_LABELS } from '../../config/constants.js';
@@ -21,7 +21,33 @@ const TOP_AFFINITIES = 4;
 const TOP_RECOMMENDATIONS = 3;
 const TOP_EVENTS = 4;
 
+function organizationCardHtml(user) {
+  const categories = user.interests.map((key) => `<span class="badge">${INTERESTS[key].emoji} ${INTERESTS[key].label}</span>`).join('');
+  return `<div class="profile-head">
+      <span class="avatar">${escapeHtml(initialOf(user.name))}</span>
+      <div>
+        <div class="profile-name">${escapeHtml(user.name)} <span class="badge badge-blue">${ROLE_LABELS[user.role]}</span></div>
+        <div class="profile-title">${escapeHtml(user.orgType)} · ${escapeHtml(user.barrio)}</div>
+      </div>
+    </div>
+    <p class="profile-about">${escapeHtml(user.description)}</p>
+    <div class="badge-row">${categories}</div>`;
+}
+
+function adminCardHtml(user) {
+  return `<div class="profile-head">
+      <span class="avatar">${escapeHtml(initialOf(user.name))}</span>
+      <div>
+        <div class="profile-name">${escapeHtml(user.name)} <span class="badge badge-blue">${ROLE_LABELS[user.role]}</span></div>
+        <div class="profile-title">${escapeHtml(user.email)}</div>
+      </div>
+    </div>
+    <p class="profile-about">Desde Moderación revisas los eventos de las organizaciones. En Impacto ves el panorama global y en el registro de actividad, los accesos y acciones recientes.</p>`;
+}
+
 function profileCardHtml(user, affinities) {
+  if (user.role === ROLES.MANAGER) return organizationCardHtml(user);
+  if (user.role === ROLES.ADMIN) return adminCardHtml(user);
   const bars = affinities.slice(0, TOP_AFFINITIES).map(({ key, score }) => `
     <div class="affinity-row">
       <div class="affinity-label"><span>${INTERESTS[key].emoji} ${INTERESTS[key].label}</span><span>${score}%</span></div>
@@ -95,7 +121,7 @@ function mount(section) {
   function render() {
     const { user, affinities } = appStore.getState();
     if (!user) return;
-    const content = contentStore.getState();
+    const content = getContent();
     const summary = roleSummary(user, content);
 
     els.greeting.textContent = `Hola, ${user.name} 👋`;
@@ -104,7 +130,7 @@ function mount(section) {
     els.cta.innerHTML = `<h3>${summary.cta.title}</h3><p>${summary.cta.text}</p><a class="btn btn-light" href="${summary.cta.href}">${summary.cta.label}</a>`;
     els.stats.innerHTML = summary.stats.map(([value, label]) => `<div class="stat"><b>${value}</b><span>${label}</span></div>`).join('');
 
-    els.recsSection.hidden = user.role === ROLES.ADMIN;
+    els.recsSection.hidden = user.role !== ROLES.CONSUMER;
     els.recs.innerHTML = buildRecommendations({ affinities })
       .slice(0, TOP_RECOMMENDATIONS)
       .map((activity) => activityCard(activity, content.enrolled.includes(activity.id)))
@@ -112,7 +138,7 @@ function mount(section) {
 
     const upcoming = publishedEvents(content).filter((event) => !isPast(event)).slice(0, TOP_EVENTS);
     els.events.innerHTML = upcoming.length
-      ? upcoming.map((event) => eventCard(event, content, { enroll: true })).join('')
+      ? upcoming.map((event) => eventCard(event, content, { enroll: user.role === ROLES.CONSUMER })).join('')
       : `<div class="empty">${icon('calendar', 24)}<b>Sin eventos próximos</b>Vuelve pronto.</div>`;
   }
 

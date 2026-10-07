@@ -1,7 +1,7 @@
 import template from './explorar.html?raw';
 import { $ } from '../../core/dom.js';
 import { appStore } from '../../state/appStore.js';
-import { contentStore } from '../../state/contentStore.js';
+import { contentStore, getContent } from '../../state/contentStore.js';
 import { PRICE_FILTERS, ROLES } from '../../config/constants.js';
 import { buildRecommendations } from '../../services/recommendations.js';
 import { matchesPriceFilter, normalizeText } from '../../utils/format.js';
@@ -22,7 +22,7 @@ function mount(section) {
   function render() {
     const { user, affinities } = appStore.getState();
     if (!user) return;
-    const { enrolled } = contentStore.getState();
+    const { enrolled } = getContent();
     const query = normalizeText(search.value.trim());
 
     const activities = buildRecommendations({ affinities })
@@ -47,4 +47,4 @@ function mount(section) {
   render();
 }
 
-export const screen = { id: 'explorar', label: 'Para ti', icon: icon('sparkles'), nav: true, access: [ROLES.CONSUMER, ROLES.MANAGER], mount };
+export const screen = { id: 'explorar', label: 'Para ti', icon: icon('sparkles'), nav: true, access: [ROLES.CONSUMER], mount };

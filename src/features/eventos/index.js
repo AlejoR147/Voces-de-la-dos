@@ -1,9 +1,9 @@
 import template from './eventos.html?raw';
 import { $ } from '../../core/dom.js';
-import { PRICE_FILTERS } from '../../config/constants.js';
+import { PRICE_FILTERS, ROLES } from '../../config/constants.js';
 import { getPlace } from '../../data/places.js';
 import { appStore } from '../../state/appStore.js';
-import { contentStore } from '../../state/contentStore.js';
+import { contentStore, getContent } from '../../state/contentStore.js';
 import { isPast, publishedEvents } from '../../services/events.js';
 import { matchesPriceFilter, normalizeText } from '../../utils/format.js';
 import { mountChipGroup } from '../../shared/components/chipGroup.js';
@@ -21,8 +21,9 @@ function mount(section) {
   $('#eventSearchIcon', section).innerHTML = icon('search', 18);
 
   function render() {
-    if (!appStore.getState().user) return;
-    const content = contentStore.getState();
+    const { user } = appStore.getState();
+    if (!user) return;
+    const content = getContent();
     const query = normalizeText(search.value.trim());
 
     const events = publishedEvents(content)
@@ -33,7 +34,7 @@ function mount(section) {
       .sort((a, b) => Number(isPast(a)) - Number(isPast(b)) || (isPast(a) ? b.date.localeCompare(a.date) : a.date.localeCompare(b.date)));
 
     list.innerHTML = events.length
-      ? events.map((event) => eventCard(event, content, { enroll: true })).join('')
+      ? events.map((event) => eventCard(event, content, { enroll: user.role === ROLES.CONSUMER })).join('')
       : `<div class="empty">${icon('calendar', 24)}<b>Sin eventos</b>Prueba con otro filtro o búsqueda.</div>`;
   }
 

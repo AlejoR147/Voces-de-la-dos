@@ -14,6 +14,7 @@
 .grid-2 { grid-template-columns: 1.4fr 1fr; gap: 20px; }
 
 .stack { display: flex; flex-direction: column; gap: 12px; }
+.stack-lg { gap: 20px; }
 .row { display: flex; align-items: center; gap: 10px; }
 .row-between { justify-content: space-between; }
 .muted { color: var(--muted); }

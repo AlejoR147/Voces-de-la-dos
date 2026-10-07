@@ -23,9 +23,13 @@ export const eventsOwnedBy = (content, userId) => content.events.filter((event) 
 
 export const isPast = (event) => event.date < toISODate(new Date());
 
+export function countEnrollments(content, enrollmentId) {
+  return Object.values(content.enrollments).filter((ids) => ids.includes(enrollmentId)).length;
+}
+
 export function eventStats(event, content) {
-  const mine = content.enrolled.includes(eventEnrollmentId(event)) ? 1 : 0;
-  const registered = event.status === EVENT_STATUS.APPROVED ? event.registered + mine : 0;
+  const enrolledHere = countEnrollments(content, eventEnrollmentId(event));
+  const registered = event.status === EVENT_STATUS.APPROVED ? event.registered + enrolledHere : 0;
   return {
     registered,
     spotsLeft: Math.max(0, event.capacity - registered),

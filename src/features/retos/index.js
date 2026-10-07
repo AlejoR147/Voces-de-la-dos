@@ -2,25 +2,31 @@ import './retos.css';
 import template from './retos.html?raw';
 import { $, delegate, escapeHtml } from '../../core/dom.js';
 import { appStore, canCreateChallenges } from '../../state/appStore.js';
-import { addTeam, contentStore, toggleTeamMembership } from '../../state/contentStore.js';
+import { addTeam, contentStore, getContent, toggleTeamMembership } from '../../state/contentStore.js';
+import { ROLES } from '../../config/constants.js';
 import { INITIAL_TEAMS } from '../../data/teams.js';
 import { initialOf } from '../../utils/format.js';
 import { createFormModal } from '../../shared/components/formModal.js';
 import { showToast } from '../../shared/components/toast.js';
 import { icon } from '../../shared/icons.js';
 
-function teamCard(team, { joined, user }) {
-  const total = team.members.length + (joined ? 1 : 0);
+function teamCard(team, { joined, user, joinCount }) {
+  const total = team.members.length + joinCount;
   const full = total >= team.capacity && !joined;
+  const others = joinCount - (joined ? 1 : 0);
   const members = team.members.map(({ initial, tone }) => `<div class="a ${tone}">${initial}</div>`).join('')
-    + (joined ? `<div class="a me" title="Tú">${escapeHtml(initialOf(user.name))}</div>` : '');
+    + (joined ? `<div class="a me" title="Tú">${escapeHtml(initialOf(user.name))}</div>` : '')
+    + (others > 0 ? `<div class="a more">+${others}</div>` : '');
   const empty = total === 0
     ? '<p class="team-note">La IA empezará a sugerir jóvenes afines en las próximas horas.</p>'
     : `<div class="avatars">${members}</div>`;
 
-  const action = joined
-    ? `<button class="btn btn-soft btn-sm" type="button" data-team="${team.id}">${icon('check', 16)} Te uniste · Salir</button>`
-    : `<button class="btn btn-primary btn-sm" type="button" data-team="${team.id}"${full ? ' disabled' : ''}>${full ? 'Equipo completo' : 'Unirme al equipo'}</button>`;
+  let action = '';
+  if (user.role === ROLES.CONSUMER) {
+    action = joined
+      ? `<button class="btn btn-soft btn-sm" type="button" data-team="${team.id}">${icon('check', 16)} Te uniste · Salir</button>`
+      : `<button class="btn btn-primary btn-sm" type="button" data-team="${team.id}"${full ? ' disabled' : ''}>${full ? 'Equipo completo' : 'Unirme al equipo'}</button>`;
+  }
 
   return `<article class="card card-hover team-card">
     <div class="team-head">
@@ -42,9 +48,13 @@ function mount(section) {
   function render() {
     const { user } = appStore.getState();
     if (!user) return;
-    const { customTeams, joinedTeams } = contentStore.getState();
+    const { customTeams, joinedTeams, teamMembers } = getContent();
     list.innerHTML = [...customTeams, ...INITIAL_TEAMS]
-      .map((team) => teamCard({ members: [], icon: '✨', ...team }, { joined: joinedTeams.includes(team.id), user }))
+      .map((team) => teamCard({ members: [], icon: '✨', ...team }, {
+        joined: joinedTeams.includes(team.id),
+        joinCount: Object.values(teamMembers).filter((ids) => ids.includes(team.id)).length,
+        user,
+      }))
       .join('');
     createBtn.hidden = !canCreateChallenges();
   }

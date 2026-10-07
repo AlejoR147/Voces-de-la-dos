@@ -1,6 +1,5 @@
 .card-head { margin-bottom: 14px; }
 .card-head .card-title { margin-bottom: 0; }
-.stack-lg { gap: 20px; }
 
 .pending-item {
   display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;
@@ -14,6 +13,15 @@
 .decision { display: inline-flex; font-size: 12px; font-weight: 800; padding: 5px 12px; border-radius: 999px; }
 .decision.approved { background: var(--green-soft); color: var(--green); }
 .decision.rejected { background: var(--red-soft); color: var(--red); }
+
+.audit { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; max-height: 360px; overflow-y: auto; }
+.audit li { display: flex; flex-direction: column; gap: 2px; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
+.audit li:last-child { border-bottom: none; }
+.audit-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.audit-type { font-weight: 700; }
+.audit-type.bad { color: var(--red); }
+.audit-time { color: var(--muted); font-size: 11.5px; flex: none; }
+.audit-meta { color: var(--muted); font-size: 12px; word-break: break-word; }
 
 #allEvents .event-date { width: 48px; }
 #allEvents .event { box-shadow: none; }

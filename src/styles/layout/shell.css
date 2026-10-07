@@ -37,6 +37,7 @@
   transition: box-shadow .18s ease, border-color .18s ease;
 }
 .nav:not([hidden]) ~ .user-chip { margin-left: 0; }
+.header-login { margin-left: auto; flex: none; }
 .user-chip:hover { box-shadow: var(--shadow-sm); border-color: #DCD2F5; }
 .user-chip-text { display: flex; flex-direction: column; line-height: 1.15; }
 .user-chip-text b { font-size: 13px; }

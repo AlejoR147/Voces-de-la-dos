@@ -1,0 +1,7 @@
+.auth-wrap { max-width: 440px; margin: 24px auto 0; }
+.auth-card { display: flex; flex-direction: column; gap: 18px; padding: 28px; }
+.auth-title { font-size: 26px; color: var(--purple-deep); }
+.auth-sub { color: var(--muted); font-size: 14px; margin-top: -8px; }
+.auth-foot { text-align: center; font-size: 13.5px; color: var(--muted); }
+.auth-foot a { color: var(--purple); font-weight: 700; }
+.auth-foot a:hover { text-decoration: underline; }

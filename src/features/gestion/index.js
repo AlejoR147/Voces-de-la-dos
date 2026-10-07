@@ -4,7 +4,7 @@ import { $, escapeHtml } from '../../core/dom.js';
 import { ROLES } from '../../config/constants.js';
 import { EVENT_STATUS } from '../../data/events.js';
 import { appStore } from '../../state/appStore.js';
-import { contentStore, createEvent } from '../../state/contentStore.js';
+import { contentStore, getContent, createEvent } from '../../state/contentStore.js';
 import { STATUS_LABELS, eventStats, eventsOwnedBy, formatEventDate } from '../../services/events.js';
 import { formatNumber, formatPrice } from '../../utils/format.js';
 import { createEventModal } from '../../shared/components/eventModal.js';
@@ -70,7 +70,7 @@ function mount(section) {
   function render() {
     const { user } = appStore.getState();
     if (!user) return;
-    const content = contentStore.getState();
+    const content = getContent();
     const events = eventsOwnedBy(content, user.id);
     const summary = summarize(events, content);
 
@@ -92,11 +92,10 @@ function mount(section) {
   }
 
   const eventModal = createEventModal({
-    submitLabel: 'Enviar a revisión',
+    submitLabel: 'Enviar a revisiÃ³n',
     onCreate: (event) => {
-      const { user } = appStore.getState();
-      createEvent({ ...event, ownerId: user.id, ownerName: user.name });
-      showToast('Evento enviado a revisión ? — un administrador lo publicará');
+      createEvent(event);
+      showToast('Evento enviado a revisiÃ³n âœ“ â€” un administrador lo publicarÃ¡');
     },
   });
 
