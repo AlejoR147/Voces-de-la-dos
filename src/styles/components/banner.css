@@ -1,7 +1,0 @@
-.creator-banner {
-  display: none; align-items: center; justify-content: space-between; gap: 12px;
-  background: linear-gradient(120deg, var(--purple-soft), #FFF0E8); border: 1px solid var(--line);
-  border-radius: 16px; padding: 14px 18px; margin-bottom: 18px;
-}
-.creator-banner.show { display: flex; }
-.creator-banner p { margin: 0; font-size: 12.8px; color: var(--purple-dark); font-weight: 600; }
