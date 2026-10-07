@@ -1,0 +1,37 @@
+<div class="page-head">
+  <div>
+    <h1 class="page-title">Impacto cultural</h1>
+    <p class="page-sub">Cómo participa la comuna: jóvenes registrados, actividades y eventos. Filtra por barrio para resaltar su participación.</p>
+  </div>
+  <div class="page-actions">
+    <select class="input filter-select" id="barrioFilter" aria-label="Filtrar por barrio"></select>
+    <button class="btn btn-outline" type="button" id="exportBtn"></button>
+  </div>
+</div>
+
+<div class="kpi-grid" id="kpiGrid"></div>
+
+<div class="charts-grid">
+  <section class="card">
+    <h3 class="card-title">Participación por barrio</h3>
+    <div class="bars" id="barChart"></div>
+  </section>
+  <section class="card">
+    <h3 class="card-title">Consumidores vs. Creadores</h3>
+    <div class="donut-wrap" id="roleDonut"></div>
+  </section>
+  <section class="card">
+    <h3 class="card-title">Intereses más populares</h3>
+    <div class="donut-wrap" id="interestDonut"></div>
+  </section>
+</div>
+
+<section class="card table-card">
+  <h3 class="card-title">Últimos eventos creados</h3>
+  <div class="table-scroll">
+    <table class="data">
+      <thead><tr><th>Evento</th><th>Barrio</th><th>Fecha</th><th>Inscritos</th><th>Precio</th><th>Estado</th></tr></thead>
+      <tbody id="eventsTableBody"></tbody>
+    </table>
+  </div>
+</section>

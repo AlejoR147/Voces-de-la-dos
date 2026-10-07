@@ -1,0 +1,43 @@
+.profile-card { display: flex; flex-direction: column; gap: 20px; }
+.profile-head { display: flex; align-items: center; gap: 16px; }
+.profile-name { font: 700 18px 'Poppins', sans-serif; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.profile-title { color: var(--muted); font-size: 13.5px; }
+.profile-title b { color: var(--purple-dark); }
+
+.affinity { display: flex; flex-direction: column; gap: 12px; }
+.affinity-row { display: flex; flex-direction: column; gap: 6px; }
+.affinity-label { display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; }
+.affinity-bar { height: 9px; background: var(--line); border-radius: 99px; overflow: hidden; }
+.affinity-fill { height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--purple), var(--orange)); transition: width .6s ease; }
+
+.map-cta {
+  background: var(--gradient-brand); color: #fff; border-radius: var(--radius); padding: 24px;
+  position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 10px; align-items: flex-start;
+  box-shadow: var(--shadow);
+}
+.map-cta::after {
+  content: ""; position: absolute; right: -50px; bottom: -70px; width: 200px; height: 200px;
+  background: radial-gradient(circle, rgba(255, 122, 69, .55), transparent 70%);
+}
+.map-cta h3 { font-size: 18px; }
+.map-cta p { color: #DCD0FA; font-size: 13.5px; max-width: 320px; }
+.map-cta .btn { position: relative; z-index: 1; margin-top: 6px; }
+
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.stat { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 14px; box-shadow: var(--shadow-sm); }
+.stat b { display: block; font: 700 22px 'Poppins', sans-serif; color: var(--purple-deep); }
+.stat span { font-size: 12px; color: var(--muted); font-weight: 600; }
+
+.events { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
+.event {
+  display: flex; align-items: center; gap: 14px; background: #fff; border: 1px solid var(--line);
+  border-radius: 16px; padding: 14px 16px; box-shadow: var(--shadow-sm);
+}
+.event-date {
+  width: 52px; flex: none; text-align: center; border-radius: 12px; background: var(--purple-soft);
+  padding: 6px 0; color: var(--purple-dark); font: 700 11px 'Poppins', sans-serif; text-transform: uppercase;
+}
+.event-date b { display: block; font-size: 18px; line-height: 1.1; }
+.event-body { flex: 1; min-width: 0; }
+.event-body b { display: block; font-size: 14px; }
+.event-body span { font-size: 12.5px; color: var(--muted); }
