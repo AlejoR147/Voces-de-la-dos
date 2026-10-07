@@ -60,7 +60,7 @@ function auditItem({ at, type, email, role, detail }) {
   const when = new Date(at).toLocaleString(LOCALE, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
   const meta = [email, role && ROLE_LABELS[role], detail].filter(Boolean).join(' · ');
   return `<li>
-    <div class="audit-head"><span class="audit-type${BAD_AUDIT_TYPES.has(type) ? ' bad' : ''}">${AUDIT_LABELS[type] ?? type}</span><span class="audit-time">${when}</span></div>
+    <div class="audit-head"><span class="audit-type${BAD_AUDIT_TYPES.has(type) ? ' bad' : ''}">${escapeHtml(AUDIT_LABELS[type] ?? type)}</span><span class="audit-time">${when}</span></div>
     ${meta ? `<span class="audit-meta">${escapeHtml(meta)}</span>` : ''}
   </li>`;
 }

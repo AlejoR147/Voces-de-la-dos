@@ -67,13 +67,7 @@ function mount(section) {
       { name: 'place', label: 'Lugar o barrio', placeholder: 'Ej. Cancha La Frontera' },
     ],
     onSubmit: ({ title, place }) => {
-      addTeam({
-        icon: '✨',
-        title: title || 'Nuevo reto comunitario',
-        subtitle: `${place || 'Comuna 2'} · equipo por formar`,
-        capacity: 5,
-        members: [],
-      });
+      addTeam({ title, place });
       showToast('Reto creado ✓ — la IA empezará a armar tu equipo');
     },
   });

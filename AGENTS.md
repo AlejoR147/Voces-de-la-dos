@@ -24,6 +24,7 @@
   - Features react with `store.watch(selector, cb)` (fires once immediately) or `store.subscribe(cb)`. Everything else is local to the feature module.
 - Auth (`services/auth.js`) has no backend: it hashes passwords with WebCrypto PBKDF2, locks an email for 60 s after 5 failed logins, expires user sessions after 7 days and admin sessions after 15 min idle, and writes a local audit trail (`services/audit.js`, shown in Moderación). Client-side checks can be bypassed from devtools, so treat them as defense in depth until a real backend exists.
   - The administrator comes from env vars (`src/config/admin.js`): `npm.cmd run admin:hash -- --email you@example.org --write` creates the git-ignored `.env.local` and prints a random password once. Restart `dev` after changing it. `.env.example` documents the keys.
+  - `services/validation.js` is the trust boundary: profiles, events and teams are whitelisted and clamped there before being stored. Route new writes through it.
   - `index.html` sets a strict Content-Security-Policy. When adding an external origin (tiles, APIs, fonts), add it there too.
 - Roles are `consumidor` (a person), `gestor` (an organization) and `admin` (`config/constants.js`). Registration (`features/bienvenida`) offers person and organization with different steps and fields. Roles cannot be changed from the UI. Login is `features/acceso`.
   - `consumidor`: browses and enrolls (Para ti, Eventos, Mapa, Retos). Only consumers can enroll or join teams.

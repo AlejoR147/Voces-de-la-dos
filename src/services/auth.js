@@ -10,9 +10,12 @@ import { appStore, endSession, getUser, startSession } from '../state/appStore.j
 import { purgeUserContent } from '../state/contentStore.js';
 import { calculateAffinities } from './affinity.js';
 import { logEvent } from './audit.js';
+import { sanitizeProfile } from './validation.js';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const REGISTRABLE_ROLES = [ROLES.CONSUMER, ROLES.MANAGER];
+const CRYPTO_ERROR = 'Tu navegador necesita una conexión segura (HTTPS) para proteger las contraseñas.';
+const cryptoAvailable = () => Boolean(globalThis.crypto?.subtle);
 const GENERIC_LOGIN_ERROR = 'Correo o contraseña incorrectos.';
 
 let lastActivity = Date.now();
@@ -64,10 +67,14 @@ function registerFailure(email) {
 
 export async function registerAccount({ email, password, role, profile }) {
   if (!REGISTRABLE_ROLES.includes(role)) return { ok: false, error: 'Tipo de cuenta no permitido.' };
+  if (!cryptoAvailable()) return { ok: false, error: CRYPTO_ERROR };
   const emailError = validateEmail(email);
   if (emailError) return { ok: false, error: emailError, field: 'email' };
   const passwordError = validatePassword(password);
   if (passwordError) return { ok: false, error: passwordError, field: 'password' };
+
+  const checked = sanitizeProfile(role, profile);
+  if (!checked.ok) return { ok: false, error: checked.error };
 
   const normalized = normalizeEmail(email);
   if (findAccountByEmail(normalized) || normalized === ADMIN_CONFIG.email) {
@@ -82,8 +89,8 @@ export async function registerAccount({ email, password, role, profile }) {
     salt,
     iterations: SECURITY.pbkdf2Iterations,
     passwordHash: await hashPassword(password, salt, SECURITY.pbkdf2Iterations),
-    profile,
-    affinities: role === ROLES.CONSUMER ? calculateAffinities(profile.interests) : [],
+    profile: checked.profile,
+    affinities: role === ROLES.CONSUMER ? calculateAffinities(checked.profile.interests) : [],
     createdAt: new Date().toISOString(),
   };
   saveAccount(account);
@@ -100,6 +107,7 @@ function beginUserSession(account) {
 }
 
 export async function login(email, password) {
+  if (!cryptoAvailable()) return { ok: false, error: CRYPTO_ERROR };
   const normalized = normalizeEmail(email);
   const locked = remainingLockout(normalized);
   if (locked) return { ok: false, error: `Demasiados intentos. Intenta de nuevo en ${locked} s.`, locked };
@@ -167,19 +175,21 @@ export function initAuth({ onSessionExpired = () => {} } = {}) {
 
 export function updateProfile(patch) {
   const user = getUser();
-  if (!user || user.role === ROLES.ADMIN) return;
+  if (!user || user.role === ROLES.ADMIN) return { ok: false, error: 'No disponible para esta cuenta.' };
   const account = findAccountById(user.id);
-  if (!account) return;
+  if (!account) return { ok: false, error: 'Cuenta no encontrada.' };
 
-  const profile = { ...account.profile, ...patch };
-  const interestsChanged = patch.interests
-    && [...patch.interests].sort().join() !== [...account.profile.interests].sort().join();
+  const checked = sanitizeProfile(account.role, { ...account.profile, ...patch });
+  if (!checked.ok) return checked;
+
+  const interestsChanged = [...checked.profile.interests].sort().join() !== [...account.profile.interests].sort().join();
   const affinities = account.role === ROLES.CONSUMER && interestsChanged
-    ? calculateAffinities(patch.interests)
+    ? calculateAffinities(checked.profile.interests)
     : account.affinities;
 
-  patchAccount(user.id, { profile, affinities });
-  appStore.setState({ user: { ...user, ...profile }, affinities });
+  patchAccount(user.id, { profile: checked.profile, affinities });
+  appStore.setState({ user: { ...user, ...checked.profile }, affinities });
+  return { ok: true };
 }
 
 async function verifyCurrentPassword(password) {

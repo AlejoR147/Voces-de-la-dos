@@ -3,6 +3,7 @@ import { ROLES, STORAGE_KEYS } from '../config/constants.js';
 import { EVENT_STATUS } from '../data/events.js';
 import { logEvent } from '../services/audit.js';
 import { simulatedInitialRegistrations } from '../services/events.js';
+import { sanitizeEvent, sanitizeTeam } from '../services/validation.js';
 import { getUser } from './appStore.js';
 
 /**
@@ -53,27 +54,28 @@ export const toggleTeamMembership = (id) => toggleForUser('teamMembers', id);
 export function addTeam(team) {
   requireRole('addTeam', ROLES.MANAGER, ROLES.ADMIN);
   contentStore.setState(({ customTeams }) => ({
-    customTeams: [{ id: `team-${Date.now()}`, ...team }, ...customTeams],
+    customTeams: [{ id: `team-${Date.now()}`, ...sanitizeTeam(team) }, ...customTeams],
   }));
 }
 
 /** Organizations create events as pending; administrators publish directly. */
 export function createEvent(event, { autoApprove = false } = {}) {
   const user = requireRole('createEvent', autoApprove ? ROLES.ADMIN : ROLES.MANAGER);
+  const clean = sanitizeEvent(event);
   contentStore.setState(({ events }) => ({
     events: [
       {
         id: `event-${Date.now()}`,
-        registered: autoApprove ? simulatedInitialRegistrations(event.capacity) : 0,
+        registered: autoApprove ? simulatedInitialRegistrations(clean.capacity) : 0,
         status: autoApprove ? EVENT_STATUS.APPROVED : EVENT_STATUS.PENDING,
-        ...event,
+        ...clean,
         ownerId: autoApprove ? null : user.id,
         ownerName: user.name,
       },
       ...events,
     ],
   }));
-  if (autoApprove) logEvent('admin_action', { email: user.email, role: user.role, detail: `Evento publicado: ${event.title}` });
+  if (autoApprove) logEvent('admin_action', { email: user.email, role: user.role, detail: `Evento publicado: ${clean.title}` });
 }
 
 export function setEventStatus(id, status) {

@@ -79,7 +79,7 @@ function detailHtml(place, { origin, route, routing, enrolled, upcoming, canEnro
     ${routeInfo}
     <div class="detail-actions">
       <button type="button" class="btn btn-accent btn-sm" data-route${routing ? ' disabled' : ''}>${icon('route', 16)} ${routing ? 'Calculando…' : route ? 'Quitar ruta' : 'Cómo llegar'}</button>
-      <a class="btn btn-outline btn-sm" href="${googleMapsDirectionsUrl(place)}" target="_blank" rel="noopener">${icon('external', 16)} Google Maps</a>
+      <a class="btn btn-outline btn-sm" href="${googleMapsDirectionsUrl(place)}" target="_blank" rel="noopener noreferrer">${icon('external', 16)} Google Maps</a>
       ${canEnroll ? enrollButton(`place:${place.id}`, enrolled) : ''}
     </div>`;
 }

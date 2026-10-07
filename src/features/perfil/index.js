@@ -52,8 +52,8 @@ function input({ name, label, value = '', type = 'text', maxlength = 80, hint = 
 function consumerForm(user) {
   return `<div class="field"><label class="field-label" for="pf-name">Nombre o apodo</label>
       <input class="input" id="pf-name" name="name" maxlength="60" value="${escapeHtml(user.name)}" autocomplete="given-name"></div>
-    <div class="field"><div class="field-inline"><label class="field-label" for="pf-age">Edad</label><span class="field-value" id="pfAgeValue">${user.age} años</span></div>
-      <input type="range" id="pf-age" name="age" min="12" max="28" value="${user.age}"></div>
+    <div class="field"><div class="field-inline"><label class="field-label" for="pf-age">Edad</label><span class="field-value" id="pfAgeValue">${Number(user.age)} años</span></div>
+      <input type="range" id="pf-age" name="age" min="12" max="28" value="${Number(user.age)}"></div>
     <div class="field"><label class="field-label" for="pf-barrio">Barrio</label><select id="pf-barrio" name="barrio">${barrioOptions(user.barrio)}</select></div>
     <div class="field"><span class="field-label">Disponibilidad</span>
       <div class="chip-group" id="pfAvailability">${AVAILABILITY_OPTIONS.map((option) => `<button type="button" class="chip${user.availability.includes(option) ? ' selected' : ''}" data-availability="${option}">${option}</button>`).join('')}</div></div>
@@ -224,7 +224,12 @@ function mount(section) {
     error.textContent = problem;
     error.hidden = !problem;
     if (problem) return;
-    updateProfile(profile);
+    const result = updateProfile(profile);
+    if (!result.ok) {
+      error.textContent = result.error;
+      error.hidden = false;
+      return;
+    }
     showToast('Perfil actualizado ✓');
   });
 
