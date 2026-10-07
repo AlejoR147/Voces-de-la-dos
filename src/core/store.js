@@ -1,5 +1,7 @@
-export function createStore(initialState) {
-  let state = initialState;
+import { readJSON, writeJSON } from './storage.js';
+
+export function createStore(initialState, { persistKey } = {}) {
+  let state = persistKey ? { ...initialState, ...readJSON(persistKey, {}) } : initialState;
   const listeners = new Set();
 
   function getState() {
@@ -8,7 +10,8 @@ export function createStore(initialState) {
 
   function setState(patch) {
     const previous = state;
-    state = { ...state, ...patch };
+    state = { ...state, ...(typeof patch === 'function' ? patch(state) : patch) };
+    if (persistKey) writeJSON(persistKey, state);
     listeners.forEach((listener) => listener(state, previous));
   }
 

@@ -1,7 +1,8 @@
 export const INITIAL_TEAMS = Object.freeze([
   {
-    id: 1,
-    title: '🧱 Mural memoria histórica',
+    id: 'team-1',
+    icon: '🧱',
+    title: 'Mural memoria histórica',
     subtitle: 'Cancha La Frontera · equipo sugerido por IA',
     capacity: 6,
     members: [
@@ -11,12 +12,11 @@ export const INITIAL_TEAMS = Object.freeze([
       { initial: 'S', tone: 'purple' },
       { initial: 'D', tone: 'blue' },
     ],
-    joinable: true,
-    joined: false,
   },
   {
-    id: 2,
-    title: '🎬 Cortometraje "Mi barrio, mi historia"',
+    id: 'team-2',
+    icon: '🎬',
+    title: 'Cortometraje "Mi barrio, mi historia"',
     subtitle: 'Buscan guionista y camarógrafo',
     capacity: 5,
     members: [
@@ -24,7 +24,5 @@ export const INITIAL_TEAMS = Object.freeze([
       { initial: 'P', tone: 'purple' },
       { initial: 'R', tone: 'blue' },
     ],
-    joinable: true,
-    joined: false,
   },
 ]);
