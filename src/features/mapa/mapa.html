@@ -1,0 +1,27 @@
+<div class="page-head">
+  <div>
+    <h1 class="page-title">Mapa cultural</h1>
+    <p class="page-sub">Espacios, horarios y precios de la Comuna 2. Toca un lugar para ver el detalle y trazar tu ruta a pie.</p>
+  </div>
+</div>
+
+<div class="map-layout">
+  <aside class="card map-panel">
+    <label class="search">
+      <span class="search-icon" id="mapSearchIcon"></span>
+      <input class="search-input" id="mapSearch" type="search" placeholder="Buscar espacio, barrio o actividad…" autocomplete="off">
+    </label>
+    <div class="map-filters">
+      <div id="mapCategoryFilter"></div>
+      <div id="mapPriceFilter"></div>
+    </div>
+    <div class="place-count" id="placeCount"></div>
+    <div class="place-list" id="placeList"></div>
+  </aside>
+
+  <div class="map-stage">
+    <div class="map" id="map"></div>
+    <button class="map-fab" type="button" id="locateBtn" title="Usar mi ubicación"></button>
+    <div class="place-detail" id="placeDetail" hidden></div>
+  </div>
+</div>
