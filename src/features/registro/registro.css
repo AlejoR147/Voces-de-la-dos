@@ -1,0 +1,16 @@
+.form-block { padding: 20px; display: flex; flex-direction: column; gap: 20px; }
+
+.steps-dots { display: flex; gap: 6px; padding: 14px 22px 0; }
+.steps-dots span { height: 5px; flex: 1; border-radius: 4px; background: var(--line); }
+.steps-dots span.on { background: var(--orange); }
+
+.type-toggle { display: flex; gap: 8px; }
+.type-card {
+  flex: 1; border: 1.8px solid var(--line); border-radius: 14px; padding: 12px; cursor: pointer;
+  transition: all .18s ease; text-align: center;
+}
+.type-card:hover { border-color: var(--purple); }
+.type-card.active { border-color: var(--purple); background: var(--purple-soft); }
+.type-card .ti { font-size: 18px; display: block; margin-bottom: 4px; }
+.type-card .tn { font-size: 12px; font-weight: 700; }
+.type-card .td { font-size: 10.5px; color: var(--muted); margin-top: 2px; }

@@ -1,0 +1,4 @@
+.card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; }
+.card--spaced { margin-top: 18px; }
+.card-title { margin-top: 0; font-size: 15px; }
+.card-text { color: var(--muted); font-size: 13.5px; line-height: 1.6; margin: 0; }

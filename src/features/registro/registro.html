@@ -1,0 +1,54 @@
+<span class="eyebrow">Pantalla · Registro</span>
+<h2 class="screen-title">Solo lo esencial para construir tu perfil</h2>
+<p class="screen-sub">Elige tus intereses aquí — verás cómo cambian tu perfil de IA y tus recomendaciones en las siguientes pantallas.</p>
+<div class="stage">
+  <div class="phone">
+    <div class="phone-screen">
+      <div class="notch"></div>
+      <div class="steps-dots"><span class="on"></span><span></span><span></span></div>
+      <div class="form-block">
+        <div>
+          <p class="field-label">Quiero principalmente</p>
+          <div class="type-toggle" id="typeToggle">
+            <div class="type-card" data-type="consumidor">
+              <span class="ti">🙋</span><span class="tn">Consumidor</span><span class="td">Descubrir y asistir</span>
+            </div>
+            <div class="type-card" data-type="creador">
+              <span class="ti">🎨</span><span class="tn">Creador</span><span class="td">Publicar y liderar</span>
+            </div>
+          </div>
+        </div>
+        <div>
+          <p class="field-label">Edad: <span id="edadVal">16</span> años</p>
+          <input type="range" min="12" max="28" value="16" id="edadRange">
+        </div>
+        <div>
+          <p class="field-label">Barrio</p>
+          <select id="barrioSelect"></select>
+        </div>
+        <div>
+          <p class="field-label">Disponibilidad</p>
+          <div class="toggle-row">
+            <span class="chip selected">Tardes</span>
+            <span class="chip">Fines de semana</span>
+            <span class="chip">Noches</span>
+          </div>
+        </div>
+        <div>
+          <p class="field-label">Tus intereses (elige varios)</p>
+          <div class="toggle-row toggle-row--wrap" id="interestPicker"></div>
+        </div>
+        <button class="btn btn-primary" type="button" id="continueBtn">Continuar →</button>
+      </div>
+    </div>
+  </div>
+  <div class="side-panel card">
+    <h3>Qué hace el sistema con esto</h3>
+    <p>
+      Cada chip que seleccionas se convierte en una señal para el motor de embeddings. No se pide más información de la necesaria: edad, barrio, disponibilidad e intereses bastan para generar un primer perfil creativo.
+    </p>
+    <p>
+      Prueba a cambiar los intereses seleccionados y luego entra a <b>Perfil IA</b> para ver el resultado.
+    </p>
+  </div>
+</div>

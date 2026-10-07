@@ -1,0 +1,29 @@
+.hero-card {
+  background: linear-gradient(150deg, var(--purple-deep), var(--purple) 80%);
+  border-radius: 22px; padding: 24px 20px 60px; color: #fff; position: relative; overflow: hidden;
+}
+.hero-card::after {
+  content: ""; position: absolute; right: -40px; bottom: -60px; width: 180px; height: 180px;
+  background: radial-gradient(circle, rgba(255, 122, 69, .55), transparent 70%);
+}
+.hero-card .eyebrow { background: rgba(255, 255, 255, .15); color: #fff; }
+.hero-card h2 { font-size: 22px; line-height: 1.3; margin: 6px 0 8px; }
+.hero-card p { font-size: 12.8px; color: #DCD0FA; margin: 0 0 18px; line-height: 1.5; }
+
+.mini-map {
+  margin: 14px 22px 0; background: #fff; border-radius: 18px; padding: 12px;
+  box-shadow: var(--shadow); position: relative; margin-top: -40px;
+}
+.mini-map-canvas {
+  height: 140px; border-radius: 12px; position: relative; overflow: hidden;
+  background:
+    repeating-linear-gradient(90deg, #EAE3FB 0 2px, transparent 2px 46px),
+    repeating-linear-gradient(0deg, #EAE3FB 0 2px, transparent 2px 46px),
+    #F6F3FC;
+}
+.pin { position: absolute; width: 16px; height: 16px; border-radius: 50%; border: 2.5px solid #fff; box-shadow: 0 2px 6px rgba(0, 0, 0, .25); }
+.pin.purple { background: var(--purple); }
+.pin.orange { background: var(--orange); }
+.pin.blue { background: var(--blue); }
+
+.interest-scroll { display: flex; gap: 8px; padding: 16px 22px 20px; overflow-x: auto; }

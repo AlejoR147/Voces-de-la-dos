@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Santa Cruz Vive Digital — Prototipo interactivo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --purple:#6C3CE0;
+    --purple-dark:#3B2170;
+    --purple-deep:#2A1854;
+    --blue:#2F80ED;
+    --orange:#FF7A45;
+    --bg:#F6F3FC;
+    --card:#FFFFFF;
+    --ink:#1F1B2E;
+    --muted:#75708C;
+    --line:#E7E1F7;
+    --purple-soft:#EFE7FF;
+    --blue-soft:#E4F0FE;
+    --orange-soft:#FFE9DE;
+    --radius:20px;
+    --radius-sm:12px;
+    --shadow:0 10px 30px -12px rgba(60,30,140,0.25);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    font-family:'Inter',sans-serif;
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.display{font-family:'Poppins',sans-serif;}
+
+  /* ---------- Top App Bar ---------- */
+  .topbar{
+    position:sticky; top:0; z-index:50;
+    background:linear-gradient(120deg,var(--purple-deep),var(--purple-dark) 60%,var(--purple));
+    padding:14px 22px;
+    display:flex; align-items:center; justify-content:space-between; gap:16px;
+    box-shadow:0 6px 24px -10px rgba(20,10,50,0.5);
+  }
+  .brand{display:flex; align-items:center; gap:10px;}
+  .brand-mark{
+    width:34px;height:34px;border-radius:10px;
+    background:linear-gradient(135deg,var(--orange),#FFB088);
+    display:flex;align-items:center;justify-content:center;
+    font-weight:800;color:var(--purple-deep);font-family:'Poppins',sans-serif;font-size:15px;
+    flex:none;
+  }
+  .brand-text{color:#fff;}
+  .brand-text b{font-family:'Poppins',sans-serif;font-weight:700;font-size:15px;letter-spacing:.2px;}
+  .brand-text span{display:block;font-size:10.5px;color:#D8CCFB;font-weight:500;letter-spacing:.3px;}
+
+  .tabs{
+    display:flex; gap:4px; background:rgba(255,255,255,0.08);
+    padding:4px; border-radius:999px; overflow-x:auto; max-width:100%;
+    scrollbar-width:none;
+  }
+  .tabs::-webkit-scrollbar{display:none;}
+  .tab{
+    white-space:nowrap;
+    border:none; background:transparent; color:#E4DAFB;
+    font-family:'Inter',sans-serif; font-weight:600; font-size:12.5px;
+    padding:8px 14px; border-radius:999px; cursor:pointer;
+    transition:background .2s ease, color .2s ease;
+  }
+  .tab:hover{color:#fff;}
+  .tab.active{background:#fff; color:var(--purple-dark);}
+
+  /* ---------- Layout ---------- */
+  main{max-width:1180px;margin:0 auto;padding:34px 20px 80px;}
+  .screen{display:none; animation:fadeUp .35s ease;}
+  .screen.active{display:block;}
+  @keyframes fadeUp{from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);}}
+
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:6px;
+    font-size:11.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;
+    color:var(--purple); background:var(--purple-soft); padding:5px 12px; border-radius:999px;
+    margin-bottom:12px;
+  }
+  .screen-title{font-size:26px; font-weight:700; margin:0 0 6px; color:var(--purple-deep);}
+  .screen-sub{color:var(--muted); font-size:14.5px; margin:0 0 26px; max-width:640px; line-height:1.55;}
+
+  /* ---------- Phone frame for youth-facing screens ---------- */
+  .stage{display:flex; gap:36px; align-items:flex-start; flex-wrap:wrap;}
+  .phone{
+    width:360px; flex:none;
+    background:#0F0B22;
+    border-radius:36px;
+    padding:12px;
+    box-shadow:var(--shadow);
+  }
+  .phone-screen{
+    background:var(--bg);
+    border-radius:26px;
+    min-height:640px;
+    overflow:hidden;
+    position:relative;
+  }
+  .notch{
+    height:22px; display:flex; align-items:center; justify-content:center;
+  }
+  .notch::before{content:"";width:70px;height:5px;background:#221A3D;border-radius:4px;}
+  .side-panel{flex:1; min-width:280px;}
+
+  /* ---------- Generic card / chip / button ---------- */
+  .card{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:18px;}
+  .chip{
+    display:inline-flex; align-items:center; gap:6px;
+    padding:8px 14px; border-radius:999px; border:1.6px solid var(--line);
+    background:#fff; font-size:12.5px; font-weight:600; color:var(--ink);
+    cursor:pointer; transition:all .18s ease; user-select:none;
+  }
+  .chip:hover{border-color:var(--purple);}
+  .chip.selected{background:var(--purple); border-color:var(--purple); color:#fff;}
+  .btn{
+    border:none; cursor:pointer; font-family:'Inter',sans-serif; font-weight:700; font-size:13.5px;
+    padding:12px 20px; border-radius:14px; transition:transform .15s ease, filter .15s ease;
+  }
+  .btn:active{transform:scale(0.97);}
+  .btn-primary{background:var(--orange); color:#fff; box-shadow:0 8px 18px -8px rgba(255,122,69,.7);}
+  .btn-primary:hover{filter:brightness(1.06);}
+  .btn-ghost{background:var(--purple-soft); color:var(--purple-dark);}
+  .btn-outline{background:transparent; border:1.6px solid var(--line); color:var(--ink);}
+  .btn-sm{padding:8px 14px; font-size:12px; border-radius:10px;}
+
+  /* ===================== INICIO ===================== */
+  .hero-inner{padding:26px 22px 18px;}
+  .hero-inner .eyebrow{background:rgba(255,255,255,.15); color:#fff;}
+  .hero-card{
+    background:linear-gradient(150deg,var(--purple-deep),var(--purple) 80%);
+    border-radius:22px; padding:24px 20px 60px; color:#fff; position:relative; overflow:hidden;
+  }
+  .hero-card::after{
+    content:""; position:absolute; right:-40px; bottom:-60px; width:180px; height:180px;
+    background:radial-gradient(circle, rgba(255,122,69,.55), transparent 70%);
+  }
+  .hero-card h2{font-size:22px; line-height:1.3; margin:6px 0 8px;}
+  .hero-card p{font-size:12.8px; color:#DCD0FA; margin:0 0 18px; line-height:1.5;}
+  .mini-map{
+    margin:14px 22px 0; background:#fff; border-radius:18px; padding:12px;
+    box-shadow:var(--shadow); position:relative; margin-top:-40px;
+  }
+  .mini-map-canvas{
+    height:140px; border-radius:12px; position:relative; overflow:hidden;
+    background:
+      repeating-linear-gradient(90deg, #EAE3FB 0 2px, transparent 2px 46px),
+      repeating-linear-gradient(0deg, #EAE3FB 0 2px, transparent 2px 46px),
+      #F6F3FC;
+  }
+  .pin{position:absolute; width:16px;height:16px;border-radius:50%; border:2.5px solid #fff; box-shadow:0 2px 6px rgba(0,0,0,.25);}
+  .pin.purple{background:var(--purple);} .pin.orange{background:var(--orange);} .pin.blue{background:var(--blue);}
+  .interest-scroll{display:flex; gap:8px; padding:16px 22px 20px; overflow-x:auto;}
+
+  /* ===================== REGISTRO ===================== */
+  .field-label{font-size:12px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; margin:0 0 8px;}
+  .form-block{padding:20px; display:flex; flex-direction:column; gap:20px;}
+  input[type=range]{width:100%; accent-color:var(--purple);}
+  select{
+    width:100%; padding:12px 14px; border-radius:12px; border:1.6px solid var(--line);
+    font-family:'Inter',sans-serif; font-size:13.5px; color:var(--ink); background:#fff;
+  }
+  .toggle-row{display:flex; gap:8px;}
+  .steps-dots{display:flex; gap:6px; padding:14px 22px 0;}
+  .steps-dots span{height:5px; flex:1; border-radius:4px; background:var(--line);}
+  .steps-dots span.on{background:var(--orange);}
+
+  /* ===================== PERFIL IA ===================== */
+  .profile-head{display:flex; gap:14px; align-items:center; padding:20px;}
+  .avatar{width:56px;height:56px;border-radius:50%; background:linear-gradient(135deg,var(--blue),var(--purple)); flex:none;
+    display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-family:'Poppins';font-size:20px;}
+  .affinity-row{margin:0 20px 12px;}
+  .affinity-label{display:flex; justify-content:space-between; font-size:12.5px; font-weight:600; margin-bottom:6px;}
+  .affinity-bar{height:9px; background:var(--line); border-radius:99px; overflow:hidden;}
+  .affinity-fill{height:100%; border-radius:99px; background:linear-gradient(90deg,var(--purple),var(--orange)); transition:width .6s ease;}
+  .rec-mini{display:flex; gap:10px; padding:14px 20px 22px; overflow-x:auto;}
+  .rec-mini-card{
+    flex:none; width:130px; background:#fff; border:1px solid var(--line); border-radius:14px; padding:10px;
+    font-size:11.5px;
+  }
+  .rec-mini-card .tag{display:inline-block; background:var(--orange-soft); color:var(--orange); font-weight:700; border-radius:8px; padding:2px 6px; font-size:10px; margin-bottom:6px;}
+
+  /* ===================== MAPA ===================== */
+  .map-wrap{position:relative;}
+  .map-canvas-full{
+    height:420px; border-radius:20px; position:relative; overflow:hidden; margin:0 20px;
+    background:
+      linear-gradient(180deg, rgba(108,60,224,0.06), rgba(47,128,237,0.05)),
+      repeating-linear-gradient(90deg, #E4DBFB 0 2px, transparent 2px 60px),
+      repeating-linear-gradient(0deg, #E4DBFB 0 2px, transparent 2px 60px),
+      #FBFAFE;
+    border:1px solid var(--line);
+  }
+  .map-pin{
+    position:absolute; width:30px;height:30px;border-radius:50% 50% 50% 0; transform:rotate(-45deg);
+    display:flex;align-items:center;justify-content:center; cursor:pointer; border:3px solid #fff;
+    box-shadow:0 6px 14px -4px rgba(0,0,0,.3); transition:transform .2s ease;
+  }
+  .map-pin:hover{transform:rotate(-45deg) scale(1.15);}
+  .map-pin span{transform:rotate(45deg); font-size:13px;}
+  .map-search{position:absolute; top:14px; left:14px; right:14px; background:#fff; border-radius:12px; padding:10px 14px;
+    box-shadow:var(--shadow); font-size:12.5px; color:var(--muted); display:flex; align-items:center; gap:8px;}
+  .sheet{
+    margin:16px 20px 0; background:#fff; border:1px solid var(--line); border-radius:18px; padding:18px;
+    display:none; gap:14px;
+  }
+  .sheet.show{display:flex;}
+  .sheet-thumb{width:70px;height:70px;border-radius:14px;flex:none;}
+
+  /* ===================== RECOMENDACIONES ===================== */
+  .rec-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:16px;}
+  .rec-card{background:#fff; border:1px solid var(--line); border-radius:18px; padding:16px; transition:transform .15s ease, box-shadow .15s ease;}
+  .rec-card:hover{transform:translateY(-3px); box-shadow:var(--shadow);}
+  .rec-card .top{display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;}
+  .aff-badge{font-size:11px; font-weight:800; color:#fff; background:var(--purple); padding:4px 9px; border-radius:999px;}
+  .rec-card h4{margin:0 0 4px; font-size:15px;}
+  .rec-card p{margin:0 0 12px; font-size:12.5px; color:var(--muted); line-height:1.5;}
+
+  /* ===================== RETOS ===================== */
+  .team-card{background:#fff; border:1px solid var(--line); border-radius:18px; padding:18px; margin-bottom:16px;}
+  .avatars{display:flex; margin:10px 0 14px;}
+  .avatars .a{width:32px;height:32px;border-radius:50%; border:2px solid #fff; margin-left:-10px;
+    display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;}
+  .avatars .a:first-child{margin-left:0;}
+
+  /* ===================== DASHBOARD ===================== */
+  .kpi-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:22px;}
+  .kpi{background:#fff; border:1px solid var(--line); border-radius:16px; padding:16px;}
+  .kpi .num{font-family:'Poppins'; font-size:24px; font-weight:700; color:var(--purple-deep);}
+  .kpi .lbl{font-size:11.5px; color:var(--muted); font-weight:600;}
+  .kpi .delta{font-size:11px; color:#1B9C63; font-weight:700; margin-top:4px;}
+  .filters-row{display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap;}
+  .filters-row select{width:auto; min-width:150px;}
+  .charts-grid{display:grid; grid-template-columns:1.1fr 0.8fr 0.8fr; gap:16px; margin-bottom:16px;}
+  @media (max-width:900px){ .charts-grid{grid-template-columns:1fr;} }
+  .chart-card{background:#fff; border:1px solid var(--line); border-radius:18px; padding:18px;}
+  .chart-card h4{margin:0 0 16px; font-size:13.5px; color:var(--muted); font-weight:700;}
+  .bars{display:flex; align-items:flex-end; gap:14px; height:160px;}
+  .bar-col{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%;}
+  .bar{width:100%; max-width:34px; border-radius:8px 8px 3px 3px; background:linear-gradient(180deg,var(--purple),var(--blue)); transition:height .5s ease, opacity .3s ease;}
+  .bar-col small{margin-top:8px; font-size:10.5px; color:var(--muted); text-align:center;}
+  .donut-wrap{display:flex; align-items:center; gap:18px;}
+  .donut{width:130px;height:130px;border-radius:50%; flex:none;}
+  .legend{font-size:11.5px; display:flex; flex-direction:column; gap:8px;}
+  .legend .dot{width:9px;height:9px;border-radius:50%; display:inline-block; margin-right:6px;}
+  table.data{width:100%; border-collapse:collapse; font-size:12.5px;}
+  table.data th{text-align:left; color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.04em; padding:8px 10px; border-bottom:2px solid var(--line);}
+  table.data td{padding:10px; border-bottom:1px solid var(--line);}
+  .status{padding:3px 9px; border-radius:999px; font-size:10.5px; font-weight:700;}
+  .status.act{background:#E3F7EC; color:#1B9C63;} .status.fin{background:#EEE; color:#777;}
+
+  /* ===================== ADMIN ===================== */
+  .admin-grid{display:grid; grid-template-columns:1.4fr 1fr; gap:20px;}
+  .pending-item{display:flex; justify-content:space-between; align-items:center; padding:14px; border:1px solid var(--line); border-radius:14px; margin-bottom:10px;}
+  .pending-item.done{opacity:.45;}
+  .pending-item .name{font-weight:700; font-size:13.5px;}
+  .pending-item .meta{font-size:11.5px; color:var(--muted);}
+  .modal-bg{position:fixed; inset:0; background:rgba(20,10,45,.55); display:none; align-items:center; justify-content:center; z-index:100;}
+  .modal-bg.show{display:flex;}
+  .modal{background:#fff; border-radius:20px; padding:26px; width:340px; box-shadow:var(--shadow);}
+  .modal input{width:100%; padding:11px 13px; border-radius:10px; border:1.6px solid var(--line); font-family:'Inter'; font-size:13px; margin-bottom:14px;}
+  .toast{position:fixed; bottom:26px; left:50%; transform:translateX(-50%) translateY(20px); background:var(--purple-deep); color:#fff;
+    padding:12px 22px; border-radius:12px; font-size:13px; font-weight:600; opacity:0; transition:all .3s ease; z-index:200; box-shadow:var(--shadow);}
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+  .events-mini{display:flex; flex-direction:column; gap:8px;}
+  .event-mini-card{border:1px solid var(--line); border-radius:12px; padding:10px 12px; font-size:12px;}
+  .event-mini-card b{display:block; font-size:13px; margin-bottom:2px;}
+
+  @media (max-width:760px){
+    .kpi-grid{grid-template-columns:repeat(2,1fr);}
+    .charts-grid, .admin-grid{grid-template-columns:1fr;}
+    .stage{justify-content:center;}
+    .phone{width:100%; max-width:360px;}
+  }
+  footer{text-align:center; color:var(--muted); font-size:11.5px; padding:30px 20px 50px;}
+
+  /* ===================== PERSONAS ===================== */
+  .persona-grid{display:grid; grid-template-columns:1fr 1fr; gap:18px;}
+  .persona-card{background:#fff; border:1px solid var(--line); border-radius:var(--radius); padding:22px; position:relative;}
+  .persona-icon{width:46px;height:46px;border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:21px; margin-bottom:12px;}
+  .persona-tag{position:absolute; top:22px; right:22px; font-size:10.5px; font-weight:800; padding:4px 10px; border-radius:999px; text-transform:uppercase; letter-spacing:.04em;}
+  .persona-card h3{margin:0 0 8px; font-size:17px;}
+  .persona-card > p{color:var(--muted); font-size:13px; line-height:1.55; margin:0 0 14px;}
+  .persona-list{margin:0 0 16px; padding-left:18px; font-size:12.8px; color:var(--ink); line-height:1.8;}
+  .persona-stat{font-size:12px; color:var(--muted); border-top:1px solid var(--line); padding-top:12px;}
+  .persona-stat b{color:var(--purple-dark); font-family:'Poppins'; font-size:14px;}
+  .type-toggle{display:flex; gap:8px;}
+  .type-card{
+    flex:1; border:1.8px solid var(--line); border-radius:14px; padding:12px; cursor:pointer;
+    transition:all .18s ease; text-align:center;
+  }
+  .type-card:hover{border-color:var(--purple);}
+  .type-card.active{border-color:var(--purple); background:var(--purple-soft);}
+  .type-card .ti{font-size:18px; display:block; margin-bottom:4px;}
+  .type-card .tn{font-size:12px; font-weight:700;}
+  .type-card .td{font-size:10.5px; color:var(--muted); margin-top:2px;}
+  .role-badge{display:inline-block; font-size:10.5px; font-weight:800; padding:3px 10px; border-radius:999px; margin-left:8px; vertical-align:middle;}
+  .role-badge.consumidor{background:var(--blue-soft); color:#1C5FC9;}
+  .role-badge.creador{background:var(--orange-soft); color:#C2540F;}
+  .creator-banner{
+    display:none; align-items:center; justify-content:space-between; gap:12px;
+    background:linear-gradient(120deg,var(--purple-soft),#FFF0E8); border:1px solid var(--line);
+    border-radius:16px; padding:14px 18px; margin-bottom:18px;
+  }
+  .creator-banner.show{display:flex;}
+  .creator-banner p{margin:0; font-size:12.8px; color:var(--purple-dark); font-weight:600;}
+  .route-btn{display:flex; gap:8px;}
+  .origin-pin{
+    position:absolute; width:14px;height:14px;border-radius:50%; background:var(--ink); border:3px solid #fff;
+    box-shadow:0 0 0 4px rgba(31,27,46,.15); bottom:16px; left:48%; z-index:5;
+  }
+  .origin-pin::after{content:"Tu ubicación"; position:absolute; top:18px; left:50%; transform:translateX(-50%);
+    font-size:9.5px; color:var(--ink); background:#fff; padding:2px 6px; border-radius:6px; white-space:nowrap; box-shadow:0 2px 6px rgba(0,0,0,.15);}
+  @media (max-width:760px){ .persona-grid{grid-template-columns:1fr;} }
+
+  /* ===================== PRECIO (gratis / de pago) ===================== */
+  .price-badge{
+    display:inline-flex; align-items:center; gap:4px; font-size:10.5px; font-weight:800;
+    padding:3px 9px; border-radius:999px; white-space:nowrap;
+  }
+  .price-badge.free{background:#E3F7EC; color:#1B9C63;}
+  .price-badge.paid{background:var(--orange-soft); color:#C2540F;}
+  .price-filter{display:flex; gap:8px; margin:0 0 14px;}
+  .price-filter .chip{font-size:11px; padding:6px 12px;}
+  .map-pin.dim{opacity:.22; pointer-events:none;}
+  .status.paid{background:var(--orange-soft); color:#C2540F;}
+  .status.free{background:#E3F7EC; color:#1B9C63;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-mark">SC</div>
+    <div class="brand-text"><b>Santa Cruz Vive Digital</b><span>Prototipo interactivo de navegación</span></div>
+  </div>
+  <div class="tabs" id="tabs">
+    <button class="tab active" data-screen="inicio">Inicio</button>
+    <button class="tab" data-screen="personas">Personas</button>
+    <button class="tab" data-screen="registro">Registro</button>
+    <button class="tab" data-screen="perfil">Perfil IA</button>
+    <button class="tab" data-screen="mapa">Mapa</button>
+    <button class="tab" data-screen="recomendaciones">Recomendaciones</button>
+    <button class="tab" data-screen="retos">Retos</button>
+    <button class="tab" data-screen="dashboard">Dashboard</button>
+    <button class="tab" data-screen="admin">Admin</button>
+  </div>
+</div>
+
+<main>
+
+  <!-- ================= INICIO ================= -->
+  <section class="screen active" id="inicio">
+    <span class="eyebrow">Pantalla · Inicio</span>
+    <h2 class="screen-title">Lo primero que ve un joven de la comuna</h2>
+    <p class="screen-sub">Propuesta de valor clara, un mapa dinámico de vista previa y acceso directo a registrarse. Todo pensado para engancharlo en menos de 5 segundos.</p>
+    <div class="stage">
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="notch"></div>
+          <div class="hero-card">
+            <span class="eyebrow">✦ Arte · Cultura · Barrio</span>
+            <h2>Descubre lo que tu comuna tiene para ti</h2>
+            <p>Talleres, colectivos y eventos gratuitos, recomendados por IA según tus gustos.</p>
+            <button class="btn btn-primary" onclick="goTo('registro')">Registrarme gratis</button>
+          </div>
+          <div class="mini-map">
+            <div class="mini-map-canvas">
+              <div class="pin purple" style="top:30%;left:20%;"></div>
+              <div class="pin orange" style="top:55%;left:45%;"></div>
+              <div class="pin blue" style="top:25%;left:70%;"></div>
+              <div class="pin purple" style="top:70%;left:75%;"></div>
+              <div class="pin orange" style="top:65%;left:15%;"></div>
+            </div>
+          </div>
+          <div class="interest-scroll">
+            <span class="chip">🎤 Rap</span><span class="chip">🕺 Danza</span><span class="chip">📷 Fotografía</span>
+            <span class="chip">🎨 Muralismo</span><span class="chip">🎭 Teatro</span>
+          </div>
+        </div>
+      </div>
+      <div class="side-panel card">
+        <h3 style="margin-top:0;">Por qué funciona</h3>
+        <p style="color:var(--muted); font-size:13.5px; line-height:1.6;">
+          El joven no busca en un catálogo genérico: ve, en una sola pantalla, el mapa de su territorio y un botón de entrada sin fricción. La app le habla en su lenguaje visual —chips, colores vivos, tono directo— antes de pedirle cualquier dato.
+        </p>
+        <button class="btn btn-ghost" onclick="goTo('registro')">Ver flujo de registro →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= PERSONAS IMPACTADAS ================= -->
+  <section class="screen" id="personas">
+    <span class="eyebrow">A quién impacta</span>
+    <h2 class="screen-title">Dos formas de vivir la cultura del barrio</h2>
+    <p class="screen-sub">La plataforma reconoce que no todos los jóvenes quieren participar igual: unos descubren y asisten, otros quieren liderar. Diseñar para ambos amplía el impacto real en la comuna.</p>
+    <div class="persona-grid">
+      <div class="persona-card">
+        <div class="persona-icon" style="background:var(--blue-soft); color:var(--blue);">🙋</div>
+        <span class="persona-tag" style="background:var(--blue-soft); color:#1C5FC9;">Consumidor</span>
+        <h3>Descubre y participa</h3>
+        <p>Jóvenes que hoy no saben qué pasa en su comuna. Quieren enterarse, asistir e inscribirse sin fricción.</p>
+        <ul class="persona-list">
+          <li>Recibe recomendaciones personalizadas por IA</li>
+          <li>Explora el mapa cultural y se inscribe en 1 toque</li>
+          <li>Se une a retos y equipos ya formados</li>
+        </ul>
+        <div class="persona-stat"><b>~80%</b> de los jóvenes de la comuna — el grueso de la base de usuarios</div>
+      </div>
+      <div class="persona-card">
+        <div class="persona-icon" style="background:var(--orange-soft); color:var(--orange);">🎨</div>
+        <span class="persona-tag" style="background:var(--orange-soft); color:#C2540F;">Creador</span>
+        <h3>Propone y lidera</h3>
+        <p>Jóvenes, colectivos y artistas locales que ya hacen cultura (danza, muralismo, música) pero no tienen dónde mostrarse ni convocar gente.</p>
+        <ul class="persona-list">
+          <li>Publica talleres, eventos o convocatorias propias</li>
+          <li>Crea retos comunitarios y recibe equipos armados por IA</li>
+          <li>Gana visibilidad en el mapa y el dashboard de la comuna</li>
+        </ul>
+        <div class="persona-stat"><b>~20%</b> de los jóvenes — colectivos y artistas emergentes del territorio</div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:18px;">
+      <h3 style="margin-top:0; font-size:15px;">Por qué separar los dos roles</h3>
+      <p style="color:var(--muted); font-size:13.5px; line-height:1.6; margin:0;">
+        Una sola plataforma de "eventos" trata a todos como espectadores. Al distinguir Consumidor y Creador desde el registro, la IA puede recomendarle a uno actividades para asistir y al otro, público para convocar — y el dashboard puede medir ambos lados del impacto: cuántos participan y cuántos ya están generando cultura. Pruébalo: elige tu rol en <b>Registro</b> y observa cómo cambian Recomendaciones y Retos.
+      </p>
+    </div>
+  </section>
+
+  <!-- ================= REGISTRO ================= -->
+  <section class="screen" id="registro">
+    <span class="eyebrow">Pantalla · Registro</span>
+    <h2 class="screen-title">Solo lo esencial para construir tu perfil</h2>
+    <p class="screen-sub">Elige tus intereses aquí — verás cómo cambian tu perfil de IA y tus recomendaciones en las siguientes pantallas.</p>
+    <div class="stage">
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="notch"></div>
+          <div class="steps-dots"><span class="on"></span><span></span><span></span></div>
+          <div class="form-block">
+            <div>
+              <p class="field-label">Quiero principalmente</p>
+              <div class="type-toggle" id="typeToggle">
+                <div class="type-card active" data-type="consumidor" onclick="selectType('consumidor')">
+                  <span class="ti">🙋</span><span class="tn">Consumidor</span><span class="td">Descubrir y asistir</span>
+                </div>
+                <div class="type-card" data-type="creador" onclick="selectType('creador')">
+                  <span class="ti">🎨</span><span class="tn">Creador</span><span class="td">Publicar y liderar</span>
+                </div>
+              </div>
+            </div>
+            <div>
+              <p class="field-label">Edad: <span id="edadVal">16</span> años</p>
+              <input type="range" min="12" max="28" value="16" id="edadRange" oninput="document.getElementById('edadVal').textContent=this.value">
+            </div>
+            <div>
+              <p class="field-label">Barrio</p>
+              <select id="barrioSelect">
+                <option>Santa Cruz</option><option>Popular</option><option>Granizal</option><option>Moscú No. 2</option><option>La Frontera</option>
+              </select>
+            </div>
+            <div>
+              <p class="field-label">Disponibilidad</p>
+              <div class="toggle-row">
+                <span class="chip selected">Tardes</span>
+                <span class="chip">Fines de semana</span>
+                <span class="chip">Noches</span>
+              </div>
+            </div>
+            <div>
+              <p class="field-label">Tus intereses (elige varios)</p>
+              <div class="toggle-row" style="flex-wrap:wrap; gap:8px;" id="interestPicker">
+                <span class="chip selected" data-interest="rap">🎤 Rap</span>
+                <span class="chip" data-interest="dibujo">✏️ Dibujo</span>
+                <span class="chip selected" data-interest="foto">📷 Fotografía</span>
+                <span class="chip" data-interest="danza">🕺 Danza</span>
+                <span class="chip" data-interest="videojuegos">🎮 Videojuegos</span>
+                <span class="chip" data-interest="teatro">🎭 Teatro</span>
+                <span class="chip" data-interest="mural">🎨 Muralismo</span>
+              </div>
+            </div>
+            <button class="btn btn-primary" onclick="buildProfile(); goTo('perfil')">Continuar →</button>
+          </div>
+        </div>
+      </div>
+      <div class="side-panel card">
+        <h3 style="margin-top:0;">Qué hace el sistema con esto</h3>
+        <p style="color:var(--muted); font-size:13.5px; line-height:1.6;">
+          Cada chip que seleccionas se convierte en una señal para el motor de embeddings. No se pide más información de la necesaria: edad, barrio, disponibilidad e intereses bastan para generar un primer perfil creativo.
+        </p>
+        <p style="color:var(--muted); font-size:13.5px; line-height:1.6;">
+          Prueba a cambiar los intereses seleccionados y luego entra a <b>Perfil IA</b> para ver el resultado.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= PERFIL IA ================= -->
+  <section class="screen" id="perfil">
+    <span class="eyebrow">Pantalla · Perfil generado por IA</span>
+    <h2 class="screen-title">El motor de clustering interpreta tus gustos</h2>
+    <p class="screen-sub">Las barras de afinidad se recalculan según lo que elegiste en Registro. El nombre del perfil también cambia con tu interés dominante.</p>
+    <div class="stage">
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="notch"></div>
+          <div class="profile-head">
+            <div class="avatar" id="avatarInit">M</div>
+            <div>
+              <div style="font-weight:700; font-size:15px;">Mateo · <span id="profBarrio">Santa Cruz</span><span class="role-badge consumidor" id="profRoleBadge">Consumidor</span></div>
+              <div style="font-size:12px; color:var(--muted);">Perfil creativo IA: <b id="profName" style="color:var(--purple-dark);">Explorador Urbano</b></div>
+            </div>
+          </div>
+          <div id="affinityList"></div>
+          <div class="rec-mini" id="miniRecs"></div>
+        </div>
+      </div>
+      <div class="side-panel card">
+        <h3 style="margin-top:0;">Cómo se calcula</h3>
+        <p style="color:var(--muted); font-size:13.5px; line-height:1.6;">
+          Cada interés seleccionado suma peso a su categoría; el resto se distribuye con un valor base bajo para reflejar afinidades latentes. El nombre del perfil (\"Explorador Urbano\", \"Voz de Barrio\"...) se asigna según la categoría con mayor peso.
+        </p>
+        <button class="btn btn-ghost" onclick="goTo('registro')">← Cambiar mis intereses</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= MAPA ================= -->
+  <section class="screen" id="mapa">
+    <span class="eyebrow">Pantalla · Mapa cultural</span>
+    <h2 class="screen-title">El patrimonio cultural de la comuna, en un solo mapa</h2>
+    <p class="screen-sub">Toca un pin para ver horario, descripción, precio y cómo llegar. "Cómo llegar" traza la ruta desde tu ubicación y abre Google Maps con coordenadas reales de la comuna.</p>
+    <div class="price-filter" id="mapPriceFilter">
+      <span class="chip selected" data-price="todos" onclick="filterMapByPrice('todos')">Todos</span>
+      <span class="chip" data-price="free" onclick="filterMapByPrice('free')">🟢 Gratis</span>
+      <span class="chip" data-price="paid" onclick="filterMapByPrice('paid')">🟠 De pago</span>
+    </div>
+    <div class="map-wrap">
+      <div class="map-canvas-full" id="mapCanvas">
+        <div class="map-search">🔍 Buscar espacio cultural…</div>
+        <svg id="routeSvg" style="position:absolute; inset:0; width:100%; height:100%; pointer-events:none;"></svg>
+        <div class="map-pin" data-price="free" style="background:var(--purple); top:28%; left:18%;" onclick="showPlace('cultura',this)"><span>🏛️</span></div>
+        <div class="map-pin" data-price="free" style="background:var(--orange); top:50%; left:38%;" onclick="showPlace('mural',this)"><span>🎨</span></div>
+        <div class="map-pin" data-price="free" style="background:var(--blue); top:22%; left:62%;" onclick="showPlace('biblio',this)"><span>📚</span></div>
+        <div class="map-pin" data-price="paid" style="background:var(--purple); top:66%; left:70%;" onclick="showPlace('escenario',this)"><span>🎶</span></div>
+        <div class="map-pin" data-price="paid" style="background:var(--orange); top:72%; left:22%;" onclick="showPlace('taller',this)"><span>🧵</span></div>
+        <div class="origin-pin" id="originPin" style="bottom:12%; left:48%;"></div>
+      </div>
+      <div class="sheet" id="placeSheet">
+        <div class="sheet-thumb" id="sheetThumb" style="background:var(--purple-soft);"></div>
+        <div>
+          <div style="font-weight:700; font-size:15px; display:flex; align-items:center; gap:8px;">
+            <span id="sheetName">—</span><span class="price-badge" id="sheetPrice">—</span>
+          </div>
+          <div style="font-size:12px; color:var(--muted); margin:4px 0 8px;" id="sheetMeta">—</div>
+          <p style="font-size:12.5px; margin:0 0 12px; color:var(--ink); line-height:1.5;" id="sheetDesc">—</p>
+          <div class="route-btn">
+            <button class="btn btn-outline btn-sm" id="routeBtn" onclick="drawRoute()">📍 Trazar ruta</button>
+            <a class="btn btn-ghost btn-sm" id="gmapsLink" href="#" target="_blank" rel="noopener">Abrir en Google Maps ↗</a>
+            <button class="btn btn-primary btn-sm">Inscribirme</button>
+          </div>
+          <p style="font-size:11px; color:var(--muted); margin:10px 0 0;" id="routeInfo"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= RECOMENDACIONES ================= -->
+  <section class="screen" id="recomendaciones">
+    <span class="eyebrow">Pantalla · Recomendaciones IA</span>
+    <h2 class="screen-title">Ordenadas según tu perfil, no por fecha</h2>
+    <p class="screen-sub">Cambia tus intereses en Registro y vuelve aquí: las tarjetas con match reordenan su afinidad.</p>
+    <div class="creator-banner" id="creatorBannerRec">
+      <p>🎨 Como Creador puedes publicar tu propio taller o convocatoria para que la IA lo recomiende a otros jóvenes.</p>
+      <button class="btn btn-primary btn-sm" onclick="openPublishModal()">+ Publicar taller</button>
+    </div>
+    <div class="price-filter" id="recPriceFilter">
+      <span class="chip selected" data-price="todos" onclick="filterRecsByPrice('todos')">Todos</span>
+      <span class="chip" data-price="free" onclick="filterRecsByPrice('free')">🟢 Gratis</span>
+      <span class="chip" data-price="paid" onclick="filterRecsByPrice('paid')">🟠 De pago</span>
+    </div>
+    <div class="rec-grid" id="recGrid"></div>
+  </section>
+
+  <!-- ================= RETOS ================= -->
+  <section class="screen" id="retos">
+    <span class="eyebrow">Pantalla · Retos comunitarios</span>
+    <h2 class="screen-title">La IA arma los equipos por ti</h2>
+    <p class="screen-sub">Cada reto agrupa jóvenes con habilidades complementarias. Únete y observa cómo se actualiza el equipo.</p>
+    <div class="creator-banner" id="creatorBannerRetos">
+      <p>🎨 Como Creador puedes lanzar un reto nuevo; la IA arma el equipo sugerido por ti.</p>
+      <button class="btn btn-primary btn-sm" onclick="openChallengeModal()">+ Crear nuevo reto</button>
+    </div>
+    <div style="max-width:640px;" id="teamsList">
+      <div class="team-card">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div><b>🧱 Mural memoria histórica</b><div style="font-size:12px; color:var(--muted);">Cancha La Frontera · equipo sugerido por IA</div></div>
+          <span class="aff-badge">5/6</span>
+        </div>
+        <div class="avatars">
+          <div class="a" style="background:var(--purple);">M</div>
+          <div class="a" style="background:var(--blue);">L</div>
+          <div class="a" style="background:var(--orange);">J</div>
+          <div class="a" style="background:var(--purple);">S</div>
+          <div class="a" style="background:var(--blue);">D</div>
+        </div>
+        <button class="btn btn-primary btn-sm" id="joinBtn1" onclick="joinTeam(this,1)">Unirme al equipo</button>
+      </div>
+      <div class="team-card">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div><b>🎬 Cortometraje "Mi barrio, mi historia"</b><div style="font-size:12px; color:var(--muted);">Buscan guionista y camarógrafo</div></div>
+          <span class="aff-badge">3/5</span>
+        </div>
+        <div class="avatars">
+          <div class="a" style="background:var(--orange);">A</div>
+          <div class="a" style="background:var(--purple);">P</div>
+          <div class="a" style="background:var(--blue);">R</div>
+        </div>
+        <button class="btn btn-primary btn-sm" id="joinBtn2" onclick="joinTeam(this,2)">Unirme al equipo</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= DASHBOARD ================= -->
+  <section class="screen" id="dashboard">
+    <span class="eyebrow">Panel · Dashboard general</span>
+    <h2 class="screen-title">Impacto cultural de la comuna, en tiempo real</h2>
+    <p class="screen-sub">Cambia el filtro de barrio: el KPI de jóvenes registrados y la barra correspondiente se resaltan.</p>
+
+    <div class="filters-row">
+      <select id="barrioFilter" onchange="filterDashboard()">
+        <option value="todos">Todos los barrios</option>
+        <option value="0">Popular</option>
+        <option value="1">Santa Cruz</option>
+        <option value="2">Granizal</option>
+        <option value="3">Moscú No. 2</option>
+        <option value="4">La Frontera</option>
+      </select>
+      <select><option>Últimos 30 días</option><option>Últimos 90 días</option><option>Este año</option></select>
+      <select><option>Todas las categorías</option><option>Rap</option><option>Fotografía</option><option>Muralismo</option></select>
+      <button class="btn btn-outline btn-sm" style="margin-left:auto;">⭳ Exportar reporte</button>
+    </div>
+
+    <div class="kpi-grid">
+      <div class="kpi"><div class="num" id="kpiJovenes">2,340</div><div class="lbl">Jóvenes registrados</div><div class="delta">▲ 12% este mes</div></div>
+      <div class="kpi"><div class="num">186</div><div class="lbl">Actividades realizadas</div><div class="delta">▲ 8% este mes</div></div>
+      <div class="kpi"><div class="num">24</div><div class="lbl">Eventos activos</div><div class="delta">▲ 3 nuevos</div></div>
+      <div class="kpi"><div class="num">78%</div><div class="lbl">% asistencia promedio</div><div class="delta">▲ 5 pts</div></div>
+    </div>
+
+    <div class="charts-grid">
+      <div class="chart-card">
+        <h4>Participación por barrio</h4>
+        <div class="bars" id="barChart"></div>
+      </div>
+      <div class="chart-card">
+        <h4>Consumidores vs. Creadores</h4>
+        <div class="donut-wrap">
+          <div class="donut" style="background:conic-gradient(var(--blue) 0 80%, var(--orange) 80% 100%);"></div>
+          <div class="legend">
+            <div><span class="dot" style="background:var(--blue);"></span>Consumidores — 80% (1,872)</div>
+            <div><span class="dot" style="background:var(--orange);"></span>Creadores — 20% (468)</div>
+            <div style="color:var(--muted); margin-top:4px;">468 jóvenes ya publican talleres, retos o proyectos propios</div>
+          </div>
+        </div>
+      </div>
+      <div class="chart-card">
+        <h4>Intereses más populares</h4>
+        <div class="donut-wrap">
+          <div class="donut" style="background:conic-gradient(var(--purple) 0 30%, var(--blue) 30% 55%, var(--orange) 55% 75%, #B39DDB 75% 90%, #90CAF9 90% 100%);"></div>
+          <div class="legend">
+            <div><span class="dot" style="background:var(--purple);"></span>Rap — 30%</div>
+            <div><span class="dot" style="background:var(--blue);"></span>Fotografía — 25%</div>
+            <div><span class="dot" style="background:var(--orange);"></span>Muralismo — 20%</div>
+            <div><span class="dot" style="background:#B39DDB;"></span>Danza — 15%</div>
+            <div><span class="dot" style="background:#90CAF9;"></span>Videojuegos — 10%</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <h4>Últimos eventos creados</h4>
+      <table class="data">
+        <thead><tr><th>Evento</th><th>Barrio</th><th>Fecha</th><th>Inscritos</th><th>Precio</th><th>Estado</th></tr></thead>
+        <tbody id="eventsTableBody">
+          <tr><td>Festival de música barrial</td><td>Santa Cruz</td><td>12 jul</td><td>45</td><td><span class="status paid">$8.000</span></td><td><span class="status act">Activo</span></td></tr>
+          <tr><td>Jornada de muralismo</td><td>La Frontera</td><td>20 jul</td><td>12</td><td><span class="status free">Gratis</span></td><td><span class="status act">Activo</span></td></tr>
+          <tr><td>Concurso de fotografía móvil</td><td>Popular</td><td>02 jul</td><td>38</td><td><span class="status free">Gratis</span></td><td><span class="status fin">Finalizado</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ================= ADMIN ================= -->
+  <section class="screen" id="admin">
+    <span class="eyebrow">Panel · Administrador</span>
+    <h2 class="screen-title">Aprobar proyectos y crear eventos</h2>
+    <p class="screen-sub">Aprueba o rechaza proyectos enviados por colectivos juveniles, y crea nuevos eventos desde aquí.</p>
+    <div class="admin-grid">
+      <div class="card">
+        <h3 style="margin-top:0; font-size:15px;">Proyectos pendientes de aprobación</h3>
+        <div class="pending-item" id="pend1">
+          <div><div class="name">Mural "Raíces"</div><div class="meta">Enviado por Colectivo Kuma · Santa Cruz</div></div>
+          <div style="display:flex; gap:8px;">
+            <button class="btn btn-outline btn-sm" onclick="resolveProject('pend1','Rechazado')">Rechazar</button>
+            <button class="btn btn-primary btn-sm" onclick="resolveProject('pend1','Aprobado ✓')">Aprobar</button>
+          </div>
+        </div>
+        <div class="pending-item" id="pend2">
+          <div><div class="name">Podcast juvenil "Voz de Barrio"</div><div class="meta">Enviado por 4 jóvenes · Granizal</div></div>
+          <div style="display:flex; gap:8px;">
+            <button class="btn btn-outline btn-sm" onclick="resolveProject('pend2','Rechazado')">Rechazar</button>
+            <button class="btn btn-primary btn-sm" onclick="resolveProject('pend2','Aprobado ✓')">Aprobar</button>
+          </div>
+        </div>
+        <div class="pending-item" id="pend3">
+          <div><div class="name">Laboratorio de videojuegos</div><div class="meta">Enviado por Colectivo Pixel · Moscú No. 2</div></div>
+          <div style="display:flex; gap:8px;">
+            <button class="btn btn-outline btn-sm" onclick="resolveProject('pend3','Rechazado')">Rechazar</button>
+            <button class="btn btn-primary btn-sm" onclick="resolveProject('pend3','Aprobado ✓')">Aprobar</button>
+          </div>
+        </div>
+        <p style="font-size:12.5px; color:var(--muted); margin-top:14px;">Aprobados hoy: <b id="approvedCount">0</b></p>
+      </div>
+      <div class="card">
+        <h3 style="margin-top:0; font-size:15px;">Próximos eventos</h3>
+        <div class="events-mini" id="eventsMini">
+          <div class="event-mini-card"><b>Festival de música barrial</b>Santa Cruz · 12 jul</div>
+          <div class="event-mini-card"><b>Jornada de muralismo</b>La Frontera · 20 jul</div>
+        </div>
+        <button class="btn btn-ghost" style="margin-top:14px; width:100%;" onclick="openModal()">+ Crear nuevo evento</button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>Prototipo de navegación clicable — Santa Cruz Vive Digital. Los datos mostrados son ilustrativos.</footer>
+
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <h3 style="margin-top:0;">Crear nuevo evento</h3>
+    <input type="text" id="evTitle" placeholder="Nombre del evento">
+    <input type="text" id="evBarrio" placeholder="Barrio">
+    <input type="text" id="evFecha" placeholder="Fecha (ej. 28 jul)">
+    <input type="text" id="evPrecio" placeholder="Precio (deja vacío o escribe Gratis, o ej. $10.000)">
+    <div style="display:flex; gap:8px;">
+      <button class="btn btn-outline" style="flex:1;" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" style="flex:1;" onclick="createEvent()">Crear evento</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="publishModalBg">
+  <div class="modal">
+    <h3 style="margin-top:0;">Publicar taller o convocatoria</h3>
+    <input type="text" id="pubTitle" placeholder="Nombre del taller/convocatoria">
+    <input type="text" id="pubDesc" placeholder="Descripción breve">
+    <input type="text" id="pubPrecio" placeholder="Precio (deja vacío o escribe Gratis, o ej. $10.000)">
+    <div style="display:flex; gap:8px;">
+      <button class="btn btn-outline" style="flex:1;" onclick="closePublishModal()">Cancelar</button>
+      <button class="btn btn-primary" style="flex:1;" onclick="publishActivity()">Publicar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="challengeModalBg">
+  <div class="modal">
+    <h3 style="margin-top:0;">Crear nuevo reto comunitario</h3>
+    <input type="text" id="chTitle" placeholder="Nombre del reto (ej. Festival de música)">
+    <input type="text" id="chLugar" placeholder="Lugar o barrio">
+    <div style="display:flex; gap:8px;">
+      <button class="btn btn-outline" style="flex:1;" onclick="closeChallengeModal()">Cancelar</button>
+      <button class="btn btn-primary" style="flex:1;" onclick="createChallenge()">Crear reto</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------- Navigation ---------- */
+function goTo(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelector('.tab[data-screen="'+id+'"]').classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+document.getElementById('tabs').addEventListener('click', e=>{
+  const btn = e.target.closest('.tab');
+  if(!btn) return;
+  goTo(btn.dataset.screen);
+});
+
+/* ---------- Registro: interest chips ---------- */
+document.getElementById('interestPicker').addEventListener('click', e=>{
+  const chip = e.target.closest('.chip');
+  if(!chip) return;
+  chip.classList.toggle('selected');
+});
+
+/* ---------- Perfil IA: build from selected interests ---------- */
+const CATALOG = {
+  rap:{label:'Rap', emoji:'🎤', profile:'Explorador Urbano'},
+  dibujo:{label:'Dibujo', emoji:'✏️', profile:'Trazo Libre'},
+  foto:{label:'Fotografía', emoji:'📷', profile:'Ojo de Barrio'},
+  danza:{label:'Danza', emoji:'🕺', profile:'Ritmo Colectivo'},
+  videojuegos:{label:'Videojuegos', emoji:'🎮', profile:'Constructor Digital'},
+  teatro:{label:'Teatro', emoji:'🎭', profile:'Voz en Escena'},
+  mural:{label:'Muralismo', emoji:'🎨', profile:'Pincel Comunitario'},
+};
+const RECS = {
+  rap:{title:'Taller de rap barrial', desc:'Escritura de letras y grabación básica en estudio comunitario.', price:0},
+  dibujo:{title:'Club de ilustración', desc:'Sesiones semanales de dibujo narrativo y cómic.', price:0},
+  foto:{title:'Concurso de foto móvil', desc:'Retrata tu barrio con tu celular y compite por materiales.', price:0},
+  danza:{title:'Colectivo de danza urbana', desc:'Ensayos abiertos los sábados en la casa de cultura.', price:0},
+  videojuegos:{title:'Laboratorio de videojuegos', desc:'Diseña tu primer juego con mentores del sector tech.', price:10000},
+  teatro:{title:'Semillero de teatro comunitario', desc:'Monta una obra corta con tu barrio como escenario.', price:0},
+  mural:{title:'Jornada de muralismo colectivo', desc:'Interviene un muro junto a artistas locales. Incluye materiales e insumos.', price:6000},
+};
+
+function buildProfile(){
+  const selected = [...document.querySelectorAll('#interestPicker .chip.selected')].map(c=>c.dataset.interest);
+  const barrio = document.getElementById('barrioSelect').value;
+  document.getElementById('profBarrio').textContent = barrio;
+
+  const affinityList = document.getElementById('affinityList');
+  affinityList.innerHTML = '';
+  const allKeys = Object.keys(CATALOG);
+  const scores = allKeys.map(k=>{
+    let base = 15 + Math.random()*10;
+    if(selected.includes(k)) base = 65 + Math.random()*30;
+    return {key:k, score: Math.min(97, Math.round(base))};
+  }).sort((a,b)=>b.score-a.score).slice(0,4);
+
+  scores.forEach(s=>{
+    const row = document.createElement('div');
+    row.className = 'affinity-row';
+    row.innerHTML = `<div class="affinity-label"><span>${CATALOG[s.key].emoji} ${CATALOG[s.key].label}</span><span>${s.score}%</span></div>
+      <div class="affinity-bar"><div class="affinity-fill" style="width:0%"></div></div>`;
+    affinityList.appendChild(row);
+    requestAnimationFrame(()=>{ row.querySelector('.affinity-fill').style.width = s.score+'%'; });
+  });
+
+  document.getElementById('profName').textContent = CATALOG[scores[0].key].profile;
+  document.getElementById('avatarInit').textContent = barrio.charAt(0);
+
+  const miniRecs = document.getElementById('miniRecs');
+  miniRecs.innerHTML = '';
+  scores.slice(0,3).forEach(s=>{
+    const r = RECS[s.key];
+    const div = document.createElement('div');
+    div.className = 'rec-mini-card';
+    div.innerHTML = `<span class="tag">${s.score}% afinidad</span><div style="font-weight:700; margin-bottom:4px;">${r.title}</div><div style="color:var(--muted);">${r.desc}</div>`;
+    miniRecs.appendChild(div);
+  });
+
+  buildRecommendations(scores.map(s=>s.key));
+  applyRoleUI();
+}
+
+/* ---------- Recomendaciones grid ---------- */
+let recPriceFilter = 'todos';
+let lastPriorityKeys = ['rap','foto'];
+function buildRecommendations(priorityKeys){
+  lastPriorityKeys = priorityKeys && priorityKeys.length ? priorityKeys : lastPriorityKeys;
+  const grid = document.getElementById('recGrid');
+  grid.innerHTML = '';
+  const keys = lastPriorityKeys.concat(Object.keys(CATALOG).filter(k=>!lastPriorityKeys.includes(k)));
+  keys.forEach((k,i)=>{
+    const r = RECS[k];
+    if(recPriceFilter==='free' && r.price>0) return;
+    if(recPriceFilter==='paid' && r.price===0) return;
+    const score = Math.max(35, 96 - i*13 - Math.round(Math.random()*6));
+    const card = document.createElement('div');
+    card.className = 'rec-card';
+    card.innerHTML = `<div class="top"><h4 style="margin:0;">${CATALOG[k].emoji} ${r.title}</h4><span class="aff-badge">${score}%</span></div>
+      ${priceBadgeHTML(r.price)}
+      <p style="margin-top:8px;">${r.desc}</p>
+      <button class="btn btn-ghost btn-sm">Ver detalle</button>`;
+    grid.appendChild(card);
+  });
+}
+function filterRecsByPrice(mode){
+  recPriceFilter = mode;
+  document.querySelectorAll('#recPriceFilter .chip').forEach(c=>c.classList.toggle('selected', c.dataset.price===mode));
+  buildRecommendations();
+}
+buildRecommendations(['rap','foto']);
+
+/* ---------- Mapa ---------- */
+/* Coordenadas aproximadas dentro de la Comuna 2 Santa Cruz, Medellín */
+const PLACES = {
+  cultura:{name:'Casa de la Cultura Santa Cruz', meta:'Lun–Sáb · 8:00am – 6:00pm', desc:'Talleres de danza, música y teatro para todas las edades.', color:'var(--purple-soft)', lat:6.2992, lng:-75.5590, price:0},
+  mural:{name:'Mural "Memoria Viva"', meta:'Acceso libre · 24 horas', desc:'Mural comunitario realizado por jóvenes del barrio en 2024.', color:'var(--orange-soft)', lat:6.2968, lng:-75.5565, price:0},
+  biblio:{name:'Biblioteca Comunitaria Granizal', meta:'Lun–Vie · 9:00am – 5:00pm', desc:'Sala de lectura, préstamo de libros y acceso a computadores.', color:'var(--blue-soft)', lat:6.3042, lng:-75.5518, price:0},
+  escenario:{name:'Escenario La Frontera', meta:'Fines de semana · desde 3:00pm', desc:'Tarima al aire libre para conciertos y festivales barriales. Algunos eventos cobran boletería para cubrir producción.', color:'var(--purple-soft)', lat:6.2921, lng:-75.5542, price:8000},
+  taller:{name:'Laboratorio Creativo Moscú', meta:'Mar–Sáb · 10:00am – 4:00pm', desc:'Espacio de fotografía, costura y manualidades comunitarias. Cobra solo el costo de materiales.', color:'var(--orange-soft)', lat:6.2958, lng:-75.5612, price:5000},
+};
+function priceBadgeHTML(price){
+  return price === 0
+    ? `<span class="price-badge free">🟢 Gratis</span>`
+    : `<span class="price-badge paid">🟠 $${price.toLocaleString('es-CO')}</span>`;
+}
+let currentPlaceKey = null, currentPinEl = null;
+function showPlace(key, pinEl){
+  const p = PLACES[key];
+  currentPlaceKey = key;
+  currentPinEl = pinEl;
+  document.getElementById('sheetName').textContent = p.name;
+  const priceEl = document.getElementById('sheetPrice');
+  priceEl.className = 'price-badge ' + (p.price === 0 ? 'free' : 'paid');
+  priceEl.textContent = p.price === 0 ? '🟢 Gratis' : `🟠 $${p.price.toLocaleString('es-CO')}`;
+  document.getElementById('sheetMeta').textContent = p.meta;
+  document.getElementById('sheetDesc').textContent = p.desc;
+  document.getElementById('sheetThumb').style.background = p.color;
+  document.getElementById('gmapsLink').href = `https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}`;
+  document.getElementById('routeInfo').textContent = '';
+  document.getElementById('routeSvg').innerHTML = '';
+  document.getElementById('placeSheet').classList.add('show');
+}
+function filterMapByPrice(mode){
+  document.querySelectorAll('#mapPriceFilter .chip').forEach(c=>c.classList.toggle('selected', c.dataset.price===mode));
+  document.querySelectorAll('.map-pin').forEach(pin=>{
+    const show = mode==='todos' || pin.dataset.price===mode;
+    pin.classList.toggle('dim', !show);
+  });
+}
+function drawRoute(){
+  if(!currentPinEl) return;
+  const canvas = document.getElementById('mapCanvas');
+  const origin = document.getElementById('originPin');
+  const svg = document.getElementById('routeSvg');
+  const cRect = canvas.getBoundingClientRect();
+  const oRect = origin.getBoundingClientRect();
+  const pRect = currentPinEl.getBoundingClientRect();
+  const x1 = oRect.left - cRect.left + oRect.width/2, y1 = oRect.top - cRect.top + oRect.height/2;
+  const x2 = pRect.left - cRect.left + pRect.width/2, y2 = pRect.top - cRect.top + pRect.height/2;
+  const midX = (x1+x2)/2, midY = Math.min(y1,y2) - 40;
+  svg.innerHTML = `<path d="M ${x1} ${y1} Q ${midX} ${midY} ${x2} ${y2}" stroke="var(--orange)" stroke-width="3" stroke-dasharray="7 6" fill="none" stroke-linecap="round"/>`;
+  const km = (Math.random()*1.6 + 0.4).toFixed(1);
+  const min = Math.round(km * 13);
+  document.getElementById('routeInfo').textContent = `≈ ${km} km · ${min} min caminando desde tu ubicación`;
+  showToast('Ruta trazada en el mapa');
+}
+
+/* ---------- Tipo de usuario: Consumidor / Creador ---------- */
+let userType = 'consumidor';
+function selectType(type){
+  userType = type;
+  document.querySelectorAll('#typeToggle .type-card').forEach(c=>c.classList.toggle('active', c.dataset.type===type));
+}
+function applyRoleUI(){
+  const badge = document.getElementById('profRoleBadge');
+  badge.textContent = userType === 'creador' ? 'Creador' : 'Consumidor';
+  badge.className = 'role-badge ' + userType;
+  document.getElementById('creatorBannerRec').classList.toggle('show', userType === 'creador');
+  document.getElementById('creatorBannerRetos').classList.toggle('show', userType === 'creador');
+}
+
+/* ---------- Retos ---------- */
+function joinTeam(btn, teamId){
+  btn.textContent = 'Te uniste ✓';
+  btn.classList.remove('btn-primary');
+  btn.classList.add('btn-outline');
+  btn.disabled = true;
+  showToast('Te uniste al equipo. La IA reajustará el reparto de roles.');
+}
+function openChallengeModal(){ document.getElementById('challengeModalBg').classList.add('show'); }
+function closeChallengeModal(){ document.getElementById('challengeModalBg').classList.remove('show'); }
+function createChallenge(){
+  const t = document.getElementById('chTitle').value || 'Nuevo reto comunitario';
+  const l = document.getElementById('chLugar').value || 'Comuna 2';
+  const card = document.createElement('div');
+  card.className = 'team-card';
+  card.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center;">
+      <div><b>✨ ${t}</b><div style="font-size:12px; color:var(--muted);">${l} · equipo por formar</div></div>
+      <span class="aff-badge">0/5</span></div>
+    <div class="avatars"></div>
+    <p style="font-size:11.5px; color:var(--muted); margin:0 0 10px;">La IA empezará a sugerir jóvenes afines en las próximas horas.</p>`;
+  document.getElementById('teamsList').prepend(card);
+  closeChallengeModal();
+  document.getElementById('chTitle').value=''; document.getElementById('chLugar').value='';
+  showToast('Reto creado ✓ — la IA empezará a armar tu equipo');
+}
+
+/* ---------- Publicar taller (rol Creador) ---------- */
+function openPublishModal(){ document.getElementById('publishModalBg').classList.add('show'); }
+function closePublishModal(){ document.getElementById('publishModalBg').classList.remove('show'); }
+function parsePriceInput(raw){
+  if(!raw || /grat/i.test(raw)) return 0;
+  const n = parseInt(raw.replace(/[^\d]/g,''));
+  return isNaN(n) ? 0 : n;
+}
+function publishActivity(){
+  const t = document.getElementById('pubTitle').value || 'Nueva actividad';
+  const d = document.getElementById('pubDesc').value || 'Publicado por un Creador de la comuna.';
+  const price = parsePriceInput(document.getElementById('pubPrecio').value);
+  const grid = document.getElementById('recGrid');
+  const card = document.createElement('div');
+  card.className = 'rec-card';
+  card.innerHTML = `<div class="top"><h4 style="margin:0;">🎨 ${t}</h4><span class="aff-badge" style="background:var(--orange);">Nuevo</span></div>
+    ${priceBadgeHTML(price)}
+    <p style="margin-top:8px;">${d}</p>
+    <button class="btn btn-ghost btn-sm">Ver detalle</button>`;
+  grid.prepend(card);
+  closePublishModal();
+  document.getElementById('pubTitle').value=''; document.getElementById('pubDesc').value=''; document.getElementById('pubPrecio').value='';
+  showToast('Publicado ✓ — ya aparece en Recomendaciones de otros jóvenes');
+}
+
+/* ---------- Dashboard ---------- */
+const barrioData = [
+  {name:'Popular', val:62},{name:'Santa\nCruz', val:88},{name:'Granizal', val:45},
+  {name:'Moscú\nNo. 2', val:70},{name:'La\nFrontera', val:55},
+];
+function renderBars(highlightIdx){
+  const chart = document.getElementById('barChart');
+  chart.innerHTML = '';
+  barrioData.forEach((b,i)=>{
+    const col = document.createElement('div');
+    col.className='bar-col';
+    const isHi = highlightIdx!==undefined && highlightIdx==i;
+    col.innerHTML = `<div class="bar" style="height:0%; background:${isHi? 'linear-gradient(180deg,var(--orange),#FFB088)' : ''}"></div><small>${b.name}</small>`;
+    chart.appendChild(col);
+    requestAnimationFrame(()=>{ col.querySelector('.bar').style.height = b.val+'%'; });
+  });
+}
+renderBars();
+function filterDashboard(){
+  const v = document.getElementById('barrioFilter').value;
+  if(v==='todos'){
+    renderBars();
+    document.getElementById('kpiJovenes').textContent = '2,340';
+  } else {
+    renderBars(parseInt(v));
+    const approx = Math.round(barrioData[v].val * 12.4);
+    document.getElementById('kpiJovenes').textContent = approx.toLocaleString('es-CO');
+  }
+}
+
+/* ---------- Admin ---------- */
+let approved = 0;
+function resolveProject(id, label){
+  const el = document.getElementById(id);
+  el.classList.add('done');
+  el.querySelectorAll('button').forEach(b=>b.disabled=true);
+  const nameEl = el.querySelector('.name');
+  nameEl.innerHTML += ` <span style="font-weight:700; color:${label.includes('Aprobado')?'#1B9C63':'#B3261E'};">— ${label}</span>`;
+  if(label.includes('Aprobado')){
+    approved++;
+    document.getElementById('approvedCount').textContent = approved;
+  }
+  showToast(label.includes('Aprobado') ? 'Proyecto aprobado y notificado al colectivo.' : 'Proyecto rechazado.');
+}
+function openModal(){ document.getElementById('modalBg').classList.add('show'); }
+function closeModal(){ document.getElementById('modalBg').classList.remove('show'); }
+function createEvent(){
+  const t = document.getElementById('evTitle').value || 'Nuevo evento';
+  const b = document.getElementById('evBarrio').value || 'Comuna 2';
+  const f = document.getElementById('evFecha').value || 'Próximamente';
+  const price = parsePriceInput(document.getElementById('evPrecio').value);
+  const div = document.createElement('div');
+  div.className = 'event-mini-card';
+  div.innerHTML = `<b>${t}</b>${b} · ${f} &nbsp; ${priceBadgeHTML(price)}`;
+  document.getElementById('eventsMini').appendChild(div);
+  closeModal();
+  document.getElementById('evTitle').value='';
+  document.getElementById('evBarrio').value='';
+  document.getElementById('evFecha').value='';
+  document.getElementById('evPrecio').value='';
+  showToast('Evento creado ✓');
+}
+
+/* run once on load so Perfil IA isn't empty before visiting Registro */
+buildProfile();
+
+/* ---------- Toast ---------- */
+let toastTimer;
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 2600);
+}
+</script>
+</body>
+</html>

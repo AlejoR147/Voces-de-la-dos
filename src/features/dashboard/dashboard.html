@@ -1,0 +1,35 @@
+<span class="eyebrow">Panel · Dashboard general</span>
+<h2 class="screen-title">Impacto cultural de la comuna, en tiempo real</h2>
+<p class="screen-sub">Cambia el filtro de barrio: el KPI de jóvenes registrados y la barra correspondiente se resaltan.</p>
+
+<div class="filters-row">
+  <select id="barrioFilter"></select>
+  <select><option>Últimos 30 días</option><option>Últimos 90 días</option><option>Este año</option></select>
+  <select><option>Todas las categorías</option><option>Rap</option><option>Fotografía</option><option>Muralismo</option></select>
+  <button class="btn btn-outline btn-sm export-btn" type="button">⭳ Exportar reporte</button>
+</div>
+
+<div class="kpi-grid" id="kpiGrid"></div>
+
+<div class="charts-grid">
+  <div class="chart-card">
+    <h4>Participación por barrio</h4>
+    <div class="bars" id="barChart"></div>
+  </div>
+  <div class="chart-card">
+    <h4>Consumidores vs. Creadores</h4>
+    <div class="donut-wrap" id="roleDonut"></div>
+  </div>
+  <div class="chart-card">
+    <h4>Intereses más populares</h4>
+    <div class="donut-wrap" id="interestDonut"></div>
+  </div>
+</div>
+
+<div class="chart-card">
+  <h4>Últimos eventos creados</h4>
+  <table class="data">
+    <thead><tr><th>Evento</th><th>Barrio</th><th>Fecha</th><th>Inscritos</th><th>Precio</th><th>Estado</th></tr></thead>
+    <tbody id="eventsTableBody"></tbody>
+  </table>
+</div>

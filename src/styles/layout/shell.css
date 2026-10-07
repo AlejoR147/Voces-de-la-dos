@@ -1,0 +1,46 @@
+.topbar {
+  position: sticky; top: 0; z-index: 50;
+  background: linear-gradient(120deg, var(--purple-deep), var(--purple-dark) 60%, var(--purple));
+  padding: 14px 22px;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  box-shadow: 0 6px 24px -10px rgba(20, 10, 50, 0.5);
+}
+
+.brand { display: flex; align-items: center; gap: 10px; }
+.brand-mark {
+  width: 34px; height: 34px; border-radius: 10px;
+  background: linear-gradient(135deg, var(--orange), #FFB088);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; color: var(--purple-deep); font-family: 'Poppins', sans-serif; font-size: 15px;
+  flex: none;
+}
+.brand-text { color: #fff; }
+.brand-text b { font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 15px; letter-spacing: .2px; }
+.brand-text span { display: block; font-size: 10.5px; color: #D8CCFB; font-weight: 500; letter-spacing: .3px; }
+
+.tabs {
+  display: flex; gap: 4px; background: rgba(255, 255, 255, 0.08);
+  padding: 4px; border-radius: 999px; overflow-x: auto; max-width: 100%;
+  scrollbar-width: none;
+}
+.tabs::-webkit-scrollbar { display: none; }
+.tab {
+  white-space: nowrap;
+  border: none; background: transparent; color: #E4DAFB;
+  font-family: 'Inter', sans-serif; font-weight: 600; font-size: 12.5px;
+  padding: 8px 14px; border-radius: 999px; cursor: pointer;
+  transition: background .2s ease, color .2s ease;
+}
+.tab:hover { color: #fff; }
+.tab.active { background: #fff; color: var(--purple-dark); }
+
+main { max-width: 1180px; margin: 0 auto; padding: 34px 20px 80px; }
+
+.screen { display: none; animation: fadeUp .35s ease; }
+.screen.active { display: block; }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+footer { text-align: center; color: var(--muted); font-size: 11.5px; padding: 30px 20px 50px; }

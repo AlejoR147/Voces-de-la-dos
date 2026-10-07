@@ -1,0 +1,28 @@
+<span class="eyebrow">Pantalla · Mapa cultural</span>
+<h2 class="screen-title">El patrimonio cultural de la comuna, en un solo mapa</h2>
+<p class="screen-sub">Toca un pin para ver horario, descripción, precio y cómo llegar. "Cómo llegar" traza la ruta desde tu ubicación y abre Google Maps con coordenadas reales de la comuna.</p>
+<div class="price-filter" id="mapPriceFilter"></div>
+<div class="map-wrap">
+  <div class="map-canvas-full" id="mapCanvas">
+    <div class="map-search">🔍 Buscar espacio cultural…</div>
+    <svg class="route-svg" id="routeSvg"></svg>
+    <div class="map-pins" id="mapPins"></div>
+    <div class="origin-pin" id="originPin"></div>
+  </div>
+  <div class="sheet" id="placeSheet">
+    <div class="sheet-thumb" id="sheetThumb"></div>
+    <div>
+      <div class="sheet-title">
+        <span id="sheetName">—</span><span class="price-badge" id="sheetPrice">—</span>
+      </div>
+      <div class="sheet-meta" id="sheetMeta">—</div>
+      <p class="sheet-desc" id="sheetDesc">—</p>
+      <div class="route-btn">
+        <button class="btn btn-outline btn-sm" type="button" id="routeBtn">📍 Trazar ruta</button>
+        <a class="btn btn-ghost btn-sm" id="gmapsLink" href="#" target="_blank" rel="noopener">Abrir en Google Maps ↗</a>
+        <button class="btn btn-primary btn-sm" type="button">Inscribirme</button>
+      </div>
+      <p class="route-info" id="routeInfo"></p>
+    </div>
+  </div>
+</div>

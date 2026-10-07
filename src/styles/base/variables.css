@@ -1,0 +1,18 @@
+:root {
+  --purple: #6C3CE0;
+  --purple-dark: #3B2170;
+  --purple-deep: #2A1854;
+  --blue: #2F80ED;
+  --orange: #FF7A45;
+  --bg: #F6F3FC;
+  --card: #FFFFFF;
+  --ink: #1F1B2E;
+  --muted: #75708C;
+  --line: #E7E1F7;
+  --purple-soft: #EFE7FF;
+  --blue-soft: #E4F0FE;
+  --orange-soft: #FFE9DE;
+  --radius: 20px;
+  --radius-sm: 12px;
+  --shadow: 0 10px 30px -12px rgba(60, 30, 140, 0.25);
+}

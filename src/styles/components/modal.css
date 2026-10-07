@@ -1,0 +1,13 @@
+.modal-bg {
+  position: fixed; inset: 0; background: rgba(20, 10, 45, .55);
+  display: none; align-items: center; justify-content: center; z-index: 100;
+}
+.modal-bg.show { display: flex; }
+.modal { background: #fff; border-radius: 20px; padding: 26px; width: 340px; box-shadow: var(--shadow); }
+.modal h3 { margin-top: 0; }
+.modal input {
+  width: 100%; padding: 11px 13px; border-radius: 10px; border: 1.6px solid var(--line);
+  font-family: 'Inter'; font-size: 13px; margin-bottom: 14px;
+}
+.modal-actions { display: flex; gap: 8px; }
+.modal-actions .btn { flex: 1; }
