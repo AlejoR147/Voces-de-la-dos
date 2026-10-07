@@ -1,13 +1,13 @@
 .modal-bg {
-  position: fixed; inset: 0; background: rgba(20, 10, 45, .55);
-  display: none; align-items: center; justify-content: center; z-index: 100;
+  position: fixed; inset: 0; background: rgba(20, 10, 45, .55); backdrop-filter: blur(3px);
+  display: none; align-items: center; justify-content: center; z-index: 1000; padding: 16px;
 }
-.modal-bg.show { display: flex; }
-.modal { background: #fff; border-radius: 20px; padding: 26px; width: 340px; box-shadow: var(--shadow); }
-.modal h3 { margin-top: 0; }
-.modal input {
-  width: 100%; padding: 11px 13px; border-radius: 10px; border: 1.6px solid var(--line);
-  font-family: 'Inter'; font-size: 13px; margin-bottom: 14px;
+.modal-bg.show { display: flex; animation: fade .2s ease; }
+.modal {
+  background: #fff; border-radius: 22px; padding: 26px; width: 100%; max-width: 400px;
+  box-shadow: var(--shadow-lg); display: flex; flex-direction: column; gap: 12px;
 }
-.modal-actions { display: flex; gap: 8px; }
+.modal h3 { font-size: 18px; margin-bottom: 4px; }
+.modal-actions { display: flex; gap: 8px; margin-top: 6px; }
 .modal-actions .btn { flex: 1; }
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }

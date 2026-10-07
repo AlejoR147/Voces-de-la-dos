@@ -4,15 +4,29 @@
   --purple-deep: #2A1854;
   --blue: #2F80ED;
   --orange: #FF7A45;
-  --bg: #F6F3FC;
+  --green: #1B9C63;
+  --red: #D8364B;
+
+  --bg: #F7F5FD;
   --card: #FFFFFF;
   --ink: #1F1B2E;
-  --muted: #75708C;
-  --line: #E7E1F7;
-  --purple-soft: #EFE7FF;
+  --muted: #6F6A86;
+  --line: #ECE7F8;
+
+  --purple-soft: #F0EAFF;
   --blue-soft: #E4F0FE;
-  --orange-soft: #FFE9DE;
+  --orange-soft: #FFEADF;
+  --green-soft: #E3F7EC;
+  --red-soft: #FDE8EB;
+
   --radius: 20px;
-  --radius-sm: 12px;
-  --shadow: 0 10px 30px -12px rgba(60, 30, 140, 0.25);
+  --radius-md: 14px;
+  --radius-sm: 10px;
+  --shadow: 0 10px 30px -14px rgba(60, 30, 140, 0.28);
+  --shadow-sm: 0 2px 8px -2px rgba(60, 30, 140, 0.12);
+  --shadow-lg: 0 24px 60px -20px rgba(42, 24, 84, 0.45);
+
+  --header-height: 68px;
+  --nav-height: 64px;
+  --gradient-brand: linear-gradient(135deg, var(--purple-deep), var(--purple) 85%);
 }

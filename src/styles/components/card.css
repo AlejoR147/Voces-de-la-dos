@@ -1,4 +1,15 @@
-.card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; }
-.card--spaced { margin-top: 18px; }
-.card-title { margin-top: 0; font-size: 15px; }
-.card-text { color: var(--muted); font-size: 13.5px; line-height: 1.6; margin: 0; }
+.card {
+  background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 20px; box-shadow: var(--shadow-sm);
+}
+.card-title { font-size: 15px; font-weight: 700; margin-bottom: 14px; }
+.card-hover { transition: transform .18s ease, box-shadow .18s ease; }
+.card-hover:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
+
+.avatar {
+  width: 56px; height: 56px; border-radius: 50%; flex: none;
+  background: linear-gradient(135deg, var(--blue), var(--purple)); color: #fff;
+  display: inline-flex; align-items: center; justify-content: center;
+  font: 700 20px 'Poppins', sans-serif;
+}
+.avatar-sm { width: 32px; height: 32px; font-size: 13px; }

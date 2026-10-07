@@ -2,13 +2,13 @@
 @import './base/reset.css';
 
 @import './layout/shell.css';
-@import './layout/screen.css';
+@import './layout/page.css';
 
 @import './components/button.css';
 @import './components/card.css';
 @import './components/chip.css';
 @import './components/badge.css';
 @import './components/form.css';
-@import './components/banner.css';
 @import './components/modal.css';
+@import './components/activity.css';
 @import './components/toast.css';

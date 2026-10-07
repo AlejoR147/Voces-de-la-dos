@@ -1,15 +1,22 @@
-.aff-badge { font-size: 11px; font-weight: 800; color: #fff; background: var(--purple); padding: 4px 9px; border-radius: 999px; }
-.aff-badge--new { background: var(--orange); }
+.badge {
+  display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;
+  font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 999px;
+  background: var(--purple-soft); color: var(--purple);
+}
+.badge-accent { background: var(--orange-soft); color: #C2540F; }
+.badge-blue { background: var(--blue-soft); color: #1C5FC9; }
+.badge-solid { background: var(--purple); color: #fff; }
 
 .price-badge {
-  display: inline-flex; align-items: center; gap: 4px; font-size: 10.5px; font-weight: 800;
-  padding: 3px 9px; border-radius: 999px; white-space: nowrap;
+  display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 800;
+  padding: 4px 10px; border-radius: 999px; white-space: nowrap;
 }
-.price-badge.free { background: #E3F7EC; color: #1B9C63; }
+.price-badge::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.price-badge.free { background: var(--green-soft); color: var(--green); }
 .price-badge.paid { background: var(--orange-soft); color: #C2540F; }
 
-.status { padding: 3px 9px; border-radius: 999px; font-size: 10.5px; font-weight: 700; }
-.status.act { background: #E3F7EC; color: #1B9C63; }
+.status { padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; }
+.status.act { background: var(--green-soft); color: var(--green); }
 .status.fin { background: #EEE; color: #777; }
 .status.paid { background: var(--orange-soft); color: #C2540F; }
-.status.free { background: #E3F7EC; color: #1B9C63; }
+.status.free { background: var(--green-soft); color: var(--green); }

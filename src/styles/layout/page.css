@@ -1,0 +1,31 @@
+.page-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
+.page-title { font-size: 28px; font-weight: 700; color: var(--purple-deep); }
+.page-sub { color: var(--muted); font-size: 14.5px; margin-top: 6px; max-width: 620px; }
+.page-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+.section { margin-top: 32px; }
+.section-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+.section-title { font-size: 18px; font-weight: 700; }
+.link-more { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--purple); }
+.link-more:hover { text-decoration: underline; }
+
+.grid { display: grid; gap: 16px; }
+.grid-cards { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+.grid-2 { grid-template-columns: 1.4fr 1fr; gap: 20px; }
+
+.stack { display: flex; flex-direction: column; gap: 12px; }
+.row { display: flex; align-items: center; gap: 10px; }
+.row-between { justify-content: space-between; }
+.muted { color: var(--muted); }
+.small { font-size: 12.5px; }
+
+.empty {
+  text-align: center; padding: 40px 20px; color: var(--muted);
+  border: 1.6px dashed var(--line); border-radius: var(--radius); background: rgba(255, 255, 255, .6);
+}
+.empty b { display: block; color: var(--ink); margin-bottom: 4px; font-family: 'Poppins', sans-serif; }
+
+@media (max-width: 860px) {
+  .grid-2 { grid-template-columns: 1fr; }
+  .page-title { font-size: 24px; }
+}

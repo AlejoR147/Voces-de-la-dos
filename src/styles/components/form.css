@@ -1,11 +1,13 @@
-.field-label { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin: 0 0 8px; }
+.field { display: flex; flex-direction: column; gap: 8px; }
+.field-label { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+
+.input, select {
+  width: 100%; padding: 12px 14px; border-radius: 12px; border: 1.6px solid var(--line);
+  font-size: 14px; background: #fff; transition: border-color .18s ease, box-shadow .18s ease;
+}
+.input:focus, select:focus { outline: none; border-color: var(--purple); box-shadow: 0 0 0 4px rgba(108, 60, 224, .12); }
 
 input[type=range] { width: 100%; accent-color: var(--purple); }
 
-select {
-  width: 100%; padding: 12px 14px; border-radius: 12px; border: 1.6px solid var(--line);
-  font-family: 'Inter', sans-serif; font-size: 13.5px; color: var(--ink); background: #fff;
-}
-
-.toggle-row { display: flex; gap: 8px; }
-.toggle-row--wrap { flex-wrap: wrap; }
+.field-inline { display: flex; align-items: center; justify-content: space-between; }
+.field-value { font: 700 14px 'Poppins', sans-serif; color: var(--purple); }
