@@ -1,6 +1,6 @@
 import './bienvenida.css';
 import template from './bienvenida.html?raw';
-import { $, delegate, escapeHtml } from '../../core/dom.js';
+import { $, $$, delegate, escapeHtml } from '../../core/dom.js';
 import {
   ACCOUNT_TYPE_OPTIONS, AVAILABILITY_OPTIONS, ORG_TYPES, PUBLIC_SCREEN, ROLES, SECURITY,
 } from '../../config/constants.js';
@@ -284,11 +284,43 @@ function mount(section) {
     }
   });
 
+  function animateCounters() {
+    const counters = $$('.stat-number', landing);
+    counters.forEach((el) => {
+      const target = parseInt(el.dataset.count, 10);
+      if (isNaN(target)) return;
+      let current = 0;
+      const duration = 1400;
+      const start = performance.now();
+      function tick(now) {
+        const progress = Math.min((now - start) / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        current = Math.floor(target * eased);
+        el.textContent = current.toLocaleString('es-CO');
+        if (progress < 1) requestAnimationFrame(tick);
+        else el.textContent = target.toLocaleString('es-CO');
+      }
+      requestAnimationFrame(tick);
+    });
+  }
+
+  let countersAnimated = false;
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting && !countersAnimated) {
+        countersAnimated = true;
+        setTimeout(animateCounters, 600);
+      }
+    });
+  }, { threshold: 0.3 });
+  observer.observe(landing);
+
   screen.onShow = () => {
     if (location.hash === '#bienvenida' && sessionStorage.getItem('scvd:open-signup')) {
       sessionStorage.removeItem('scvd:open-signup');
       open();
     }
+    countersAnimated = false;
   };
 }
 
