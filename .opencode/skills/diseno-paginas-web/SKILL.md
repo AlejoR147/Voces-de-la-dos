@@ -1,8 +1,3 @@
----
-name: diseno-paginas-web
-description: Use when designing, styling or improving web pages, screens, components or layouts (diseño de páginas web, UI, CSS, responsive, accesibilidad, paleta, tipografía) in this Vite + vanilla JS project. Covers design tokens, layout, components, responsive rules and accessibility.
----
-
 # Diseño de páginas web
 
 Guía para diseñar o mejorar pantallas y componentes de este proyecto (Vanilla JS + Vite + Leaflet, copy en español, Comuna 2 Santa Cruz, Medellín).
