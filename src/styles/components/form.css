@@ -4,10 +4,10 @@
 
 .input, select, textarea.input {
   width: 100%; padding: 12px 14px; border-radius: 12px; border: 1.6px solid var(--line);
-  font-size: 16px; background: #fff; transition: border-color .18s ease, box-shadow .18s ease;
+  font-size: 16px; background: var(--card); color: var(--ink); transition: border-color .18s ease, box-shadow .18s ease;
 }
 textarea.input { resize: vertical; min-height: 84px; font-family: inherit; }
-.input:focus, select:focus { outline: none; border-color: var(--purple); box-shadow: 0 0 0 4px rgba(108, 60, 224, .12); }
+.input:focus, select:focus { outline: none; border-color: var(--purple); box-shadow: var(--focus-ring); }
 .input[aria-invalid="true"] { border-color: var(--red); }
 
 input[type=range] { width: 100%; accent-color: var(--purple); }
@@ -26,11 +26,11 @@ input[type=range] { width: 100%; accent-color: var(--purple); }
 
 .form-error {
   background: var(--red-soft); color: var(--red); font-size: 13px; font-weight: 600;
-  padding: 10px 14px; border-radius: 12px;
+  padding: 10px 14px; border-radius: 12px; border: 1px solid var(--red);
 }
 .form-success {
   background: var(--green-soft); color: var(--green); font-size: 13px; font-weight: 600;
-  padding: 10px 14px; border-radius: 12px;
+  padding: 10px 14px; border-radius: 12px; border: 1px solid var(--green);
 }
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .form-grid .span-2 { grid-column: span 2; }

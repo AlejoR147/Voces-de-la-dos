@@ -6,5 +6,6 @@ table.data th {
   text-align: left; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .05em;
   padding: 10px 20px; border-bottom: 1px solid var(--line);
 }
-table.data td { padding: 14px 20px; border-bottom: 1px solid var(--line); }
+table.data td { padding: 14px 20px; border-bottom: 1px solid var(--line); color: var(--ink); }
 table.data tbody tr:last-child td { border-bottom: none; }
+table.data tbody tr:hover td { background: var(--bg-secondary); }

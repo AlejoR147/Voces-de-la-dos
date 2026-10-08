@@ -10,6 +10,7 @@
     "admin:hash": "node scripts/admin-hash.mjs"
   },
   "devDependencies": {
+    "sharp": "^0.35.5",
     "vite": "^6.0.0"
   },
   "dependencies": {

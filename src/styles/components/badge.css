@@ -1,25 +1,45 @@
 .badge {
   display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;
-  font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 999px;
+  font-family: var(--font-body);
+  font-size: 11px; font-weight: 700;
+  padding: 4px 10px; border-radius: 999px;
   background: var(--purple-soft); color: var(--purple);
+  border: 1px solid var(--purple);
 }
-.badge-accent { background: var(--orange-soft); color: #C2540F; }
-.badge-blue { background: var(--blue-soft); color: #1C5FC9; }
-.badge-solid { background: var(--purple); color: #fff; }
+.badge-cyan { background: var(--blue-soft); color: var(--blue); border-color: var(--blue); }
+.badge-amber { background: var(--orange-soft); color: #C2540F; border-color: var(--orange); }
+.badge-lime { background: var(--green-soft); color: var(--green); border-color: var(--green); }
+.badge-red { background: var(--red-soft); color: var(--red); border-color: var(--red); }
+.badge-neutral { background: var(--bg-secondary); color: var(--muted); border-color: var(--line); }
+
+.badge-solid { background: var(--ink); color: var(--card); border-color: var(--ink); }
+.badge-solid-magenta { background: var(--purple); color: #fff; border-color: var(--purple); }
+.badge-solid-cyan { background: var(--blue); color: var(--bg); border-color: var(--blue); }
+.badge-solid-amber { background: var(--orange); color: var(--bg); border-color: var(--orange); }
 
 .price-badge {
-  display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 800;
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--font-body);
+  font-size: 11px; font-weight: 700;
   padding: 4px 10px; border-radius: 999px; white-space: nowrap;
 }
 .price-badge::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
-.price-badge.free { background: var(--green-soft); color: var(--green); }
-.price-badge.paid { background: var(--orange-soft); color: #C2540F; }
+.price-badge.free { background: var(--green-soft); color: var(--green); border: 1px solid var(--green); }
+.price-badge.paid { background: var(--orange-soft); color: #C2540F; border: 1px solid var(--orange); }
 
-.status { padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; }
-.status.act { background: var(--green-soft); color: var(--green); }
-.status.fin { background: #EEE; color: #777; }
-.status.paid { background: var(--orange-soft); color: #C2540F; }
-.status.free { background: var(--green-soft); color: var(--green); }
-.status.pending { background: var(--orange-soft); color: #C2540F; }
-.status.approved { background: var(--green-soft); color: var(--green); }
-.status.rejected { background: var(--red-soft); color: var(--red); }
+.status {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 10px; border-radius: 999px;
+  font-family: var(--font-body);
+  font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .05em;
+  border: 1px solid;
+}
+.status-pending { background: var(--orange-soft); color: #C2540F; border-color: var(--orange); }
+.status-approved { background: var(--green-soft); color: var(--green); border-color: var(--green); }
+.status-rejected { background: var(--red-soft); color: var(--red); border-color: var(--red); }
+.status-draft { background: var(--bg-secondary); color: var(--muted); border-color: var(--line); }
+.status-active { background: var(--blue-soft); color: var(--blue); border-color: var(--blue); }
+.status-finished { background: var(--bg-secondary); color: var(--muted); border-color: var(--line); }
+.status-free { background: var(--green-soft); color: var(--green); border-color: var(--green); }
+.status-paid { background: var(--orange-soft); color: #C2540F; border-color: var(--orange); }

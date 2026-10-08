@@ -1,30 +1,39 @@
-<div class="page-head">
-  <div>
-    <h1 class="page-title" id="homeGreeting">Hola 👋</h1>
-    <p class="page-sub" id="homeSub"></p>
+<div class="page">
+  <header class="page-header">
+    <div class="page-title-row">
+      <h1 class="page-title" id="homeGreeting">Hola 👋</h1>
+      <p class="page-sub" id="homeSub"></p>
+    </div>
+    <div class="page-actions" id="homeCta"></div>
+  </header>
+
+  <div class="stats-strip" id="homeStats" aria-label="Tus números"></div>
+
+  <div class="page-grid">
+    <aside class="profile-panel" id="profileCard" aria-label="Perfil"></aside>
+
+    <main class="content-panel">
+      <section class="section" id="homeRecsSection" aria-labelledby="recsTitle">
+        <header class="section-header">
+          <h2 id="recsTitle" class="section-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            Recomendado para ti
+          </h2>
+          <a class="link-more" href="#explorar">Ver todo</a>
+        </header>
+        <div class="recs-carousel" id="homeRecs" role="list"></div>
+      </section>
+
+      <section class="section" aria-labelledby="eventsTitle">
+        <header class="section-header">
+          <h2 id="eventsTitle" class="section-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            Próximos eventos
+          </h2>
+          <a class="link-more" href="#eventos">Ver todos</a>
+        </header>
+        <div class="event-list" id="homeEvents" role="list"></div>
+      </section>
+    </main>
   </div>
 </div>
-
-<div class="grid grid-2">
-  <section class="card profile-card" id="profileCard"></section>
-  <div class="stack">
-    <section class="map-cta" id="homeCta"></section>
-    <section class="stats" id="homeStats"></section>
-  </div>
-</div>
-
-<section class="section" id="homeRecsSection">
-  <div class="section-head">
-    <h2 class="section-title">Recomendado para ti</h2>
-    <a class="link-more" href="#explorar">Ver todo</a>
-  </div>
-  <div class="grid grid-cards" id="homeRecs"></div>
-</section>
-
-<section class="section">
-  <div class="section-head">
-    <h2 class="section-title">Próximos eventos</h2>
-    <a class="link-more" href="#eventos">Ver todos</a>
-  </div>
-  <div class="event-list" id="homeEvents"></div>
-</section>
