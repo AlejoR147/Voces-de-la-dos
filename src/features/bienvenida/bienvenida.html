@@ -51,23 +51,32 @@
     <div class="event-list" id="homeEvents" role="list"></div>
   </section>
 
-  <section class="section how-it-works" aria-labelledby="how-title">
+  <section class="how-it-works" aria-labelledby="how-title">
     <h2 id="how-title" class="section-title">Cómo funciona</h2>
-    <div class="steps-grid">
-      <article class="card step">
-        <span class="step-num" aria-hidden="true">1</span>
-        <h3>Crea tu cuenta</h3>
-        <p>Persona u organización: elige tu rol, barrio e intereses en 2 minutos.</p>
+    <div class="timeline">
+      <article class="timeline-step" data-step>
+        <span class="timeline-dot" aria-hidden="true"></span>
+        <div class="timeline-card card">
+          <span class="step-num" aria-hidden="true">1</span>
+          <h3>Crea tu cuenta</h3>
+          <p>Persona u organización: elige tu rol, barrio e intereses en 2 minutos.</p>
+        </div>
       </article>
-      <article class="card step">
-        <span class="step-num" aria-hidden="true">2</span>
-        <h3>Descubre tu agenda</h3>
-        <p>Eventos recomendados según tus gustos, con mapa, horarios y precios.</p>
+      <article class="timeline-step" data-step>
+        <span class="timeline-dot" aria-hidden="true"></span>
+        <div class="timeline-card card">
+          <span class="step-num" aria-hidden="true">2</span>
+          <h3>Descubre tu agenda</h3>
+          <p>Eventos recomendados según tus gustos, con mapa, horarios y precios.</p>
+        </div>
       </article>
-      <article class="card step">
-        <span class="step-num" aria-hidden="true">3</span>
-        <h3>Participa</h3>
-        <p>Inscríbete en un toque, únete a retos y haz parte de las decisiones del barrio.</p>
+      <article class="timeline-step" data-step>
+        <span class="timeline-dot" aria-hidden="true"></span>
+        <div class="timeline-card card">
+          <span class="step-num" aria-hidden="true">3</span>
+          <h3>Participa</h3>
+          <p>Inscríbete en un toque, únete a retos y haz parte de las decisiones del barrio.</p>
+        </div>
       </article>
     </div>
   </section>
@@ -77,34 +86,85 @@
     <div class="features-grid">
       <a class="card feature" href="#eventos">
         <span class="feature-icon feature-icon--purple" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h8M8 18h5"/></svg>
         </span>
         <h3>Eventos a tu medida</h3>
         <p>Actividades recomendadas según lo que te gusta. Filtra por barrio, fecha, precio o categoría.</p>
         <span class="feature-arrow" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
         </span>
       </a>
       <a class="card feature" href="#mapa">
         <span class="feature-icon feature-icon--blue" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5"/><path d="M12 22V12M12 2v10"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
         </span>
         <h3>Mapa del territorio</h3>
         <p>Ve qué pasa en cada esquina. Rutas a pie, horarios, precios y contacto. Tu barrio en la palma de la mano.</p>
         <span class="feature-arrow" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
         </span>
       </a>
       <a class="card feature" href="#retos">
         <span class="feature-icon feature-icon--orange" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         </span>
         <h3>Impacto comunitario</h3>
         <p>Únete a retos, forma equipos, apoya proyectos y decide en qué se invierte. Tu voz cuenta.</p>
         <span class="feature-arrow" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
         </span>
       </a>
+    </div>
+  </section>
+
+  <section class="spotlight" aria-labelledby="spotlight-title">
+    <div class="spotlight-message">
+      <h2 id="spotlight-title">¿Listo para ser parte?</h2>
+      <p>Crea tu cuenta gratis y descubre todo lo que tu comuna tiene para ti.</p>
+      <div class="spotlight-actions">
+        <button class="btn btn-primary btn-xl" type="button" data-start>Crear mi cuenta gratis</button>
+        <a class="btn btn-lg btn-ghost-light" href="#acceso">Iniciar sesión</a>
+      </div>
+    </div>
+    <div class="spotlight-carousel" aria-hidden="true">
+      <div class="spotlight-track" data-carousel-track>
+        <figure class="carousel-slide">
+          <img src="/images/teatro-1.webp" alt="" loading="lazy" decoding="async">
+        </figure>
+        <figure class="carousel-slide">
+          <img src="/images/teatro-2.webp" alt="" loading="lazy" decoding="async">
+        </figure>
+        <figure class="carousel-slide">
+          <img src="/images/teatro-3.webp" alt="" loading="lazy" decoding="async">
+        </figure>
+        <figure class="carousel-slide">
+          <img src="/images/teatro-4.webp" alt="" loading="lazy" decoding="async">
+        </figure>
+        <figure class="carousel-slide">
+          <img src="/images/teatro-5.webp" alt="" loading="lazy" decoding="async">
+        </figure>
+        <figure class="carousel-slide">
+          <img src="/images/teatro-6.webp" alt="" loading="lazy" decoding="async">
+        </figure>
+        <figure class="carousel-slide">
+          <img src="/images/teatro-7.webp" alt="" loading="lazy" decoding="async">
+        </figure>
+        <figure class="carousel-slide">
+          <img src="/images/casa-cultura.webp" alt="" loading="lazy" decoding="async">
+        </figure>
+        <figure class="carousel-slide">
+          <img src="/images/casa-amarilla.webp" alt="" loading="lazy" decoding="async">
+        </figure>
+        <figure class="carousel-slide">
+          <img src="/images/literatura.webp" alt="" loading="lazy" decoding="async">
+        </figure>
+        <figure class="carousel-slide">
+          <img src="/images/dibujo.webp" alt="" loading="lazy" decoding="async">
+        </figure>
+        <figure class="carousel-slide">
+          <img src="/images/piano.webp" alt="" loading="lazy" decoding="async">
+        </figure>
+      </div>
     </div>
   </section>
 

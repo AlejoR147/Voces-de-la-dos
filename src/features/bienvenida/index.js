@@ -335,53 +335,41 @@ function mount(section) {
     bindEnrollment(eventsList);
   }
 
-  // === INFINITE MARQUEE CAROUSEL ===
-  function initCarousel() {
-    const root = $('[data-carousel]', section);
-    if (!root) return;
-    const track = $('[data-carousel-track]', root);
-    const slides = $$('.carousel-slide', track);
-    const prevBtn = $('[data-carousel-prev]', root);
-    const nextBtn = $('[data-carousel-next]', root);
-
-    // Duplicate slides for seamless loop
-    slides.forEach((slide) => {
-      const clone = slide.cloneNode(true);
-      clone.setAttribute('aria-hidden', 'true');
-      clone.classList.add('carousel-slide--clone');
-      track.appendChild(clone);
+  // === INFINITE MARQUEE CAROUSELS ===
+  function initCarousels() {
+    document.querySelectorAll('.carousel-track').forEach((track) => {
+      const slides = $$('.carousel-slide', track);
+      slides.forEach((slide) => {
+        const clone = slide.cloneNode(true);
+        clone.setAttribute('aria-hidden', 'true');
+        track.appendChild(clone);
+      });
     });
 
-    const allSlides = $$('.carousel-slide', track);
-    const half = allSlides.length / 2;
-    let page = 0;
+    const ltrRoot = $('[data-carousel]', section);
+    if (ltrRoot) {
+      const track = $('[data-carousel-track]', ltrRoot);
+      const prevBtn = $('[data-carousel-prev]', ltrRoot);
+      const nextBtn = $('[data-carousel-next]', ltrRoot);
+      let page = 0;
 
-    function perView() {
-      const w = window.innerWidth;
-      if (w <= 860) return 1;
-      return 3;
+      function perView() { return window.innerWidth <= 860 ? 1 : 3; }
+
+      function jump(dir) {
+        const pv = perView();
+        const allSlides = $$('.carousel-slide', track);
+        const half = allSlides.length / 2;
+        page = (page + dir + half) % half;
+        const slideWidth = allSlides[0].getBoundingClientRect().width + 16;
+        track.style.animation = 'none';
+        track.style.transform = `translateX(-${page * pv * slideWidth}px)`;
+        clearTimeout(jump._t);
+        jump._t = setTimeout(() => { track.style.animation = ''; track.style.transform = ''; }, 600);
+      }
+
+      prevBtn?.addEventListener('click', () => jump(-1));
+      nextBtn?.addEventListener('click', () => jump(1));
     }
-
-    function jump(dir) {
-      const pv = perView();
-      page = (page + dir + half) % half;
-      const slideWidth = allSlides[0].getBoundingClientRect().width + 16;
-      track.style.animation = 'none';
-      track.style.transform = `translateX(-${page * pv * slideWidth}px)`;
-      // Restart marquee after a pause
-      clearTimeout(jump._t);
-      jump._t = setTimeout(() => {
-        track.style.animation = '';
-        track.style.transform = '';
-      }, 600);
-    }
-
-    prevBtn.addEventListener('click', () => jump(-1));
-    nextBtn.addEventListener('click', () => jump(1));
-
-    // Pause on hover/focus handled by CSS; ensure visibility for keyboard users
-    track.addEventListener('focusin', () => track.classList.add('is-paused'));
-    track.addEventListener('focusout', () => track.classList.remove('is-paused'));
   }
 
   screen.onShow = () => {
@@ -394,7 +382,7 @@ function mount(section) {
   };
 
   renderEvents();
-  initCarousel();
+  initCarousels();
 }
 
 export const screen = {

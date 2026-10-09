@@ -59,41 +59,6 @@
   <div id="modal-root"></div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <script>
-    (function() {
-      const toggle = document.getElementById('themeToggle');
-      const html = document.documentElement;
-      const STORAGE_KEY = 'scvd-theme';
-
-      function getSystemTheme() {
-        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-      }
-
-      function applyTheme(theme, save = false) {
-        html.setAttribute('data-theme', theme);
-        if (save) localStorage.setItem(STORAGE_KEY, theme);
-        else localStorage.removeItem(STORAGE_KEY);
-      }
-
-      // Initial: use saved choice or follow system
-      const savedTheme = localStorage.getItem(STORAGE_KEY);
-      applyTheme(savedTheme || getSystemTheme(), false);
-
-      if (toggle) {
-        toggle.addEventListener('click', () => {
-          const current = html.getAttribute('data-theme');
-          applyTheme(current === 'dark' ? 'light' : 'dark', true);
-        });
-      }
-
-      // Follow system preference when user hasn't made a choice
-      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-        if (!localStorage.getItem(STORAGE_KEY)) {
-          applyTheme(e.matches ? 'dark' : 'light', false);
-        }
-      });
-    })();
-  </script>
   <script type="module" src="/src/main.js"></script>
 </body>
 </html>
