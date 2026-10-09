@@ -7,42 +7,18 @@
   <meta name="description" content="Descubre talleres, eventos y espacios culturales de la Comuna 2 Santa Cruz, Medellín.">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://tile.openstreetmap.org https://*.tile.openstreetmap.org; connect-src 'self' https://routing.openstreetmap.de ws://localhost:* ws://127.0.0.1:*; object-src 'none'; base-uri 'self'; form-action 'self'">
-  <title>Santa Cruz Vive Digital</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%236C3CE0'/%3E%3Ctext x='32' y='42' font-size='28' font-family='Arial' font-weight='700' text-anchor='middle' fill='white'%3ESC%3C/text%3E%3C/svg%3E">
+  <title>Voces de la dos</title>
+  <link rel="icon" type="image/png" href="/icono.png">
+  <link rel="apple-touch-icon" href="/icono.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <script>
-    (function() {
-      var STORAGE_KEY = 'scvd-theme';
-      var html = document.documentElement;
-      function getSystemTheme() {
-        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-      }
-      function applyTheme(theme, save) {
-        html.setAttribute('data-theme', theme);
-        if (save) localStorage.setItem(STORAGE_KEY, theme);
-        else localStorage.removeItem(STORAGE_KEY);
-        var meta = document.querySelector('meta[name="theme-color"]');
-        if (meta) meta.setAttribute('content', theme === 'dark' ? '#1A1625' : '#6C3CE0');
-      }
-      var saved = localStorage.getItem(STORAGE_KEY);
-      applyTheme(saved || getSystemTheme(), false);
-      window.__scvdToggleTheme = function() {
-        var current = html.getAttribute('data-theme');
-        applyTheme(current === 'dark' ? 'light' : 'dark', true);
-      };
-      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
-        if (!localStorage.getItem(STORAGE_KEY)) applyTheme(e.matches ? 'dark' : 'light', false);
-      });
-    })();
-  </script>
 </head>
 <body>
   <header class="app-header">
-    <a class="brand" href="#inicio" aria-label="Santa Cruz Vive Digital">
-      <span class="brand-mark">SC</span>
-      <span class="brand-text"><b>Santa Cruz Vive Digital</b><small>Comuna 2 · Medellín</small></span>
+    <a class="brand" href="#inicio" aria-label="Voces de la dos">
+      <span class="brand-mark"><img src="/icono.png" alt="" width="38" height="38"></span>
+      <span class="brand-text"><b>Voces de la dos</b><small>Comuna 2 · Medellín</small></span>
     </a>
     <nav class="nav" id="nav" aria-label="Principal" hidden></nav>
     <a class="user-chip" id="userChip" href="#perfil" hidden></a>

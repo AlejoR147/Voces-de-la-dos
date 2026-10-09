@@ -222,6 +222,19 @@
 /* === EVENTS PREVIEW === */
 .events-preview .event-list { display: flex; flex-direction: column; gap: 12px; }
 
+/* === SCROLL REVEAL (sections fade up on entry) === */
+.events-preview,
+.photo-carousel,
+.cta-final {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 600ms var(--ease-out), transform 600ms var(--ease-out);
+}
+
+.events-preview.revealed,
+.photo-carousel.revealed,
+.cta-final.revealed { opacity: 1; transform: none; }
+
 .empty-events { color: var(--muted); font-size: 14px; padding: 20px; text-align: center; }
 
 /* === TIMELINE (HOW IT WORKS) === */
@@ -254,12 +267,12 @@
   padding: 20px 48px 20px 0;
   opacity: 0;
   transform: translateY(30px);
-  animation: stepReveal 600ms var(--ease-out) forwards;
+  transition: opacity 600ms var(--ease-out), transform 600ms var(--ease-out);
 }
 
-.timeline-step:nth-child(2) { animation-delay: 200ms; }
-.timeline-step:nth-child(3) { animation-delay: 400ms; }
-.timeline-step:nth-child(4) { animation-delay: 600ms; }
+.timeline.revealed .timeline-step { opacity: 1; transform: none; }
+.timeline.revealed .timeline-step:nth-child(2) { transition-delay: 150ms; }
+.timeline.revealed .timeline-step:nth-child(3) { transition-delay: 300ms; }
 
 .timeline-step:nth-child(even) {
   justify-content: flex-start;
@@ -346,9 +359,16 @@
   border-radius: var(--radius);
   padding: 28px 24px;
   background: var(--card);
-  transition: transform 250ms var(--ease-out), border-color 250ms ease, box-shadow 250ms ease;
   overflow: hidden;
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 500ms var(--ease-out), transform 500ms var(--ease-out), border-color 250ms ease, box-shadow 250ms ease;
 }
+
+.features-grid.revealed .feature { opacity: 1; transform: none; }
+.features-grid.revealed .feature:nth-child(2) { transition-delay: 120ms; }
+.features-grid.revealed .feature:nth-child(3) { transition-delay: 240ms; }
+.features-grid.revealed .feature:hover { transform: translateY(-6px); }
 
 .feature::before {
   content: '';
@@ -373,11 +393,13 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 52px; height: 52px;
-  border-radius: 14px;
-  margin-bottom: 16px;
+  width: 40px; height: 40px;
+  border-radius: 12px;
+  margin-bottom: 12px;
   transition: transform 300ms var(--ease-spring);
 }
+
+.feature-icon svg { width: 22px; height: 22px; }
 
 .feature:hover .feature-icon { transform: scale(1.1) rotate(-3deg); }
 
@@ -421,100 +443,7 @@
 
 .feature-arrow svg { width: 20px; height: 20px; }
 
-/* === SPOTLIGHT (MESSAGE + RTL CAROUSEL) === */
-.spotlight {
-  display: grid;
-  grid-template-columns: 1fr 1.4fr;
-  gap: 40px;
-  align-items: center;
-  padding: 80px 0;
-  margin: 40px 0;
-  border-radius: 32px;
-  background: linear-gradient(135deg, var(--purple-deep) 0%, var(--purple) 100%);
-  color: #fff;
-  overflow: hidden;
-  position: relative;
-}
-
-.spotlight::before {
-  content: '';
-  position: absolute;
-  right: -100px;
-  top: -100px;
-  width: 400px;
-  height: 400px;
-  background: radial-gradient(circle, rgba(255, 122, 69, .3), transparent 70%);
-  pointer-events: none;
-}
-
-.spotlight-message {
-  padding: 0 48px;
-  position: relative;
-  z-index: 1;
-}
-
-.spotlight-message h2 {
-  font-size: clamp(28px, 4vw, 40px);
-  font-weight: 800;
-  letter-spacing: -.02em;
-  line-height: 1.2;
-  margin: 0 0 16px;
-}
-
-.spotlight-message p {
-  font-size: 17px;
-  line-height: 1.6;
-  color: rgba(255, 255, 255, .85);
-  margin: 0 0 32px;
-  max-width: 400px;
-}
-
-.spotlight-actions {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.spotlight .btn-ghost-light {
-  background: rgba(255, 255, 255, .14);
-  border-color: rgba(255, 255, 255, .3);
-}
-
-.spotlight-carousel {
-  overflow: hidden;
-  position: relative;
-  z-index: 1;
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 15%, #000 100%);
-  mask-image: linear-gradient(90deg, transparent, #000 15%, #000 100%);
-}
-
-.spotlight-track {
-  display: flex;
-  gap: 12px;
-  width: max-content;
-  animation: marquee-rtl 40s linear infinite;
-  will-change: transform;
-}
-
-.spotlight-carousel:hover .spotlight-track,
-.spotlight-carousel:focus-within .spotlight-track {
-  animation-play-state: paused;
-}
-
-@keyframes marquee-rtl {
-  from { transform: translateX(-50%); }
-  to { transform: translateX(0); }
-}
-
-.spotlight .carousel-slide {
-  width: clamp(200px, 18vw, 280px);
-  aspect-ratio: 3 / 4;
-  border-radius: 14px;
-}
-
-.spotlight .carousel-slide figcaption { display: none; }
-
-/* === PHOTO CAROUSEL (INFINITE MARQUEE LTR) === */
+/* === PHOTO CAROUSEL (INFINITE MARQUEE) === */
 .photo-carousel {
   padding: 60px 0 40px;
   overflow: hidden;
@@ -539,18 +468,7 @@
   display: flex;
   gap: 16px;
   width: max-content;
-  animation: marquee 50s linear infinite;
   will-change: transform;
-}
-
-.carousel:hover .carousel-track,
-.carousel:focus-within .carousel-track {
-  animation-play-state: paused;
-}
-
-@keyframes marquee {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
 }
 
 .carousel-slide {
@@ -670,11 +588,6 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes stepReveal {
-  from { opacity: 0; transform: translateY(30px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
 @keyframes pathDraw {
   to { opacity: 1; }
 }
@@ -691,8 +604,9 @@
 @media (prefers-reduced-motion: reduce) {
   .map-lines, .hero-pin, .hero-float, .feature, .feature-icon, .feature-arrow,
   .stat-number, .hero-tag, .hero h1, .hero-copy > p, .hero-actions, .hero-stats,
-  .carousel-track, .spotlight-track, .carousel-slide img, .carousel-btn,
-  .timeline-step, .timeline-card, .step-num {
+  .carousel-track, .carousel-slide img, .carousel-btn,
+  .timeline-step, .timeline-card, .step-num,
+  .events-preview, .photo-carousel, .cta-final {
     animation: none !important;
     opacity: 1 !important;
     transform: none !important;
@@ -705,8 +619,6 @@
 /* === RESPONSIVE === */
 @media (max-width: 1024px) {
   .features-grid { grid-template-columns: 1fr; }
-  .spotlight { grid-template-columns: 1fr; }
-  .spotlight-message { padding: 40px; }
 }
 
 @media (max-width: 860px) {
@@ -747,8 +659,6 @@
   .section { padding: 40px 0 16px; }
   .section-header { flex-direction: column; align-items: flex-start; gap: 12px; }
   .carousel-slide { width: 75vw; }
-  .spotlight { padding: 40px 0; }
-  .spotlight-message { padding: 24px; }
   .cta-final { padding: 48px 20px; border-radius: 20px; }
   .role-options { grid-template-columns: 1fr; }
   .wizard { padding: 22px; }

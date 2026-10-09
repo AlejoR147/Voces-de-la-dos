@@ -258,7 +258,7 @@ function mount(section) {
     render();
   }
 
-  $('[data-start]', section).addEventListener('click', open);
+  $$('[data-start]', section).forEach((button) => button.addEventListener('click', open));
   delegate(onboarding, 'click', '[data-next]', next);
   delegate(onboarding, 'click', '[data-back]', back);
   delegate(onboarding, 'click', '[data-role]', (_event, button) => {
@@ -290,36 +290,44 @@ function mount(section) {
   });
 
   // === STATS COUNTERS ===
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let countersAnimated = false;
+
   function animateCounters() {
-    const counters = $$('.stat-number', landing);
-    counters.forEach((el) => {
+    if (countersAnimated) return;
+    countersAnimated = true;
+    $$('.stat-number', landing).forEach((el) => {
       const target = parseInt(el.dataset.count, 10);
       if (isNaN(target)) return;
-      let current = 0;
+      const finalText = `+${target.toLocaleString('es-CO')}`;
+      if (reduceMotion) {
+        el.textContent = finalText;
+        return;
+      }
       const duration = 1400;
       const start = performance.now();
       function tick(now) {
         const progress = Math.min((now - start) / duration, 1);
         const eased = 1 - Math.pow(1 - progress, 3);
-        current = Math.floor(target * eased);
+        const current = Math.floor(target * eased);
         el.textContent = `+${current.toLocaleString('es-CO')}`;
         if (progress < 1) requestAnimationFrame(tick);
-        else el.textContent = `+${target.toLocaleString('es-CO')}`;
+        else el.textContent = finalText;
       }
       requestAnimationFrame(tick);
     });
   }
 
-  let countersAnimated = false;
-  const observer = new IntersectionObserver((entries) => {
+  const statsTarget = $('.hero-stats', landing) || landing;
+  const statsObserver = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
-      if (entry.isIntersecting && !countersAnimated) {
-        countersAnimated = true;
-        setTimeout(animateCounters, 600);
+      if (entry.isIntersecting) {
+        setTimeout(animateCounters, 400);
+        statsObserver.disconnect();
       }
     });
   }, { threshold: 0.3 });
-  observer.observe(landing);
+  statsObserver.observe(statsTarget);
 
   // === EVENTS PREVIEW ===
   function renderEvents() {
@@ -335,54 +343,108 @@ function mount(section) {
     bindEnrollment(eventsList);
   }
 
-  // === INFINITE MARQUEE CAROUSELS ===
-  function initCarousels() {
-    document.querySelectorAll('.carousel-track').forEach((track) => {
-      const slides = $$('.carousel-slide', track);
-      slides.forEach((slide) => {
-        const clone = slide.cloneNode(true);
-        clone.setAttribute('aria-hidden', 'true');
-        track.appendChild(clone);
-      });
+  // === INFINITE AUTO CAROUSEL (rAF, deterministic) ===
+  function initCarousel() {
+    const root = $('[data-carousel]', section);
+    if (!root || root.dataset.ready) return;
+    root.dataset.ready = 'true';
+    const track = $('[data-carousel-track]', root);
+    const prevBtn = $('[data-carousel-prev]', root);
+    const nextBtn = $('[data-carousel-next]', root);
+
+    $$('.carousel-slide', track).forEach((slide) => {
+      const clone = slide.cloneNode(true);
+      clone.setAttribute('aria-hidden', 'true');
+      track.appendChild(clone);
     });
 
-    const ltrRoot = $('[data-carousel]', section);
-    if (ltrRoot) {
-      const track = $('[data-carousel-track]', ltrRoot);
-      const prevBtn = $('[data-carousel-prev]', ltrRoot);
-      const nextBtn = $('[data-carousel-next]', ltrRoot);
-      let page = 0;
+    const SPEED = 80;
+    let offset = 0;
+    let last = 0;
+    let hold = false;
+    let inView = true;
+    let resumeTimer = 0;
 
-      function perView() { return window.innerWidth <= 860 ? 1 : 3; }
+    function halfWidth() { return track.scrollWidth / 2; }
 
-      function jump(dir) {
-        const pv = perView();
-        const allSlides = $$('.carousel-slide', track);
-        const half = allSlides.length / 2;
-        page = (page + dir + half) % half;
-        const slideWidth = allSlides[0].getBoundingClientRect().width + 16;
-        track.style.animation = 'none';
-        track.style.transform = `translateX(-${page * pv * slideWidth}px)`;
-        clearTimeout(jump._t);
-        jump._t = setTimeout(() => { track.style.animation = ''; track.style.transform = ''; }, 600);
+    function normalize() {
+      const half = halfWidth();
+      if (half > 0) {
+        offset %= half;
+        if (offset > 0) offset -= half;
       }
-
-      prevBtn?.addEventListener('click', () => jump(-1));
-      nextBtn?.addEventListener('click', () => jump(1));
     }
+
+    function paint() { track.style.transform = `translateX(${offset}px)`; }
+
+    function tick(now) {
+      if (!last) last = now;
+      const delta = Math.min((now - last) / 1000, 0.05);
+      last = now;
+      if (!reduceMotion && inView && !hold) {
+        offset -= SPEED * delta;
+        normalize();
+        paint();
+      }
+      requestAnimationFrame(tick);
+    }
+
+    function pause(ms = 0) {
+      hold = true;
+      clearTimeout(resumeTimer);
+      if (ms > 0) resumeTimer = setTimeout(() => { hold = false; }, ms);
+    }
+
+    function nudge(direction) {
+      const first = track.querySelector('.carousel-slide');
+      const step = first ? first.getBoundingClientRect().width + 16 : 300;
+      offset += direction * step;
+      normalize();
+      paint();
+      pause(6000);
+    }
+
+    prevBtn?.addEventListener('click', () => nudge(1));
+    nextBtn?.addEventListener('click', () => nudge(-1));
+    root.addEventListener('mouseenter', () => pause());
+    root.addEventListener('mouseleave', () => { hold = false; });
+    root.addEventListener('focusin', () => pause());
+    root.addEventListener('focusout', () => { hold = false; });
+    root.addEventListener('touchstart', () => pause(), { passive: true });
+    root.addEventListener('touchend', () => { hold = false; }, { passive: true });
+
+    new IntersectionObserver((entries) => {
+      entries.forEach((entry) => { inView = entry.isIntersecting; });
+    }, { threshold: 0.05 }).observe(root);
+
+    requestAnimationFrame(tick);
   }
+
+  // === SCROLL REVEALS ===
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('revealed');
+        revealObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+  $$('.timeline, .features-grid, .events-preview, .photo-carousel, .cta-final', section)
+    .forEach((el) => revealObserver.observe(el));
 
   screen.onShow = () => {
     if (location.hash === '#bienvenida' && sessionStorage.getItem('scvd:open-signup')) {
       sessionStorage.removeItem('scvd:open-signup');
       open();
     }
-    countersAnimated = false;
     renderEvents();
+    if (section.offsetParent !== null && !landing.hidden) {
+      requestAnimationFrame(animateCounters);
+    }
   };
 
   renderEvents();
-  initCarousels();
+  initCarousel();
 }
 
 export const screen = {
