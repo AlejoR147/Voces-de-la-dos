@@ -10,6 +10,10 @@ import { registerAccount, validateEmail, validatePassword } from '../../services
 import { showToast } from '../../shared/components/toast.js';
 import { bindPasswordToggle } from '../../shared/components/passwordField.js';
 import { icon } from '../../shared/icons.js';
+import { contentStore, getContent } from '../../state/contentStore.js';
+import { publishedEvents, isPast } from '../../services/events.js';
+import { eventCard } from '../../shared/components/eventCard.js';
+import { bindEnrollment } from '../../shared/components/enrollButton.js';
 
 const STEP_COUNT = 4;
 
@@ -176,6 +180,7 @@ function mount(section) {
 
   const landing = $('#landing', section);
   const onboarding = $('#onboarding', section);
+  const eventsList = $('#homeEvents', section);
   let step = 0;
   let draft = initialDraft();
   let error = '';
@@ -284,6 +289,7 @@ function mount(section) {
     }
   });
 
+  // === STATS COUNTERS ===
   function animateCounters() {
     const counters = $$('.stat-number', landing);
     counters.forEach((el) => {
@@ -296,9 +302,9 @@ function mount(section) {
         const progress = Math.min((now - start) / duration, 1);
         const eased = 1 - Math.pow(1 - progress, 3);
         current = Math.floor(target * eased);
-        el.textContent = current.toLocaleString('es-CO');
+        el.textContent = `+${current.toLocaleString('es-CO')}`;
         if (progress < 1) requestAnimationFrame(tick);
-        else el.textContent = target.toLocaleString('es-CO');
+        else el.textContent = `+${target.toLocaleString('es-CO')}`;
       }
       requestAnimationFrame(tick);
     });
@@ -315,7 +321,21 @@ function mount(section) {
   }, { threshold: 0.3 });
   observer.observe(landing);
 
-  // === CAROUSEL ===
+  // === EVENTS PREVIEW ===
+  function renderEvents() {
+    if (!eventsList) return;
+    const content = getContent();
+    const user = content;
+    const upcoming = publishedEvents(content)
+      .filter((event) => !isPast(event))
+      .slice(0, 3);
+    eventsList.innerHTML = upcoming.length
+      ? upcoming.map((event) => eventCard(event, content, { enroll: false })).join('')
+      : '<p class="empty-events">No hay eventos próximos. ¡Vuelve pronto!</p>';
+    bindEnrollment(eventsList);
+  }
+
+  // === INFINITE MARQUEE CAROUSEL ===
   function initCarousel() {
     const root = $('[data-carousel]', section);
     if (!root) return;
@@ -323,64 +343,45 @@ function mount(section) {
     const slides = $$('.carousel-slide', track);
     const prevBtn = $('[data-carousel-prev]', root);
     const nextBtn = $('[data-carousel-next]', root);
-    const dotsWrap = $('[data-carousel-dots]', root);
-    let index = 0;
+
+    // Duplicate slides for seamless loop
+    slides.forEach((slide) => {
+      const clone = slide.cloneNode(true);
+      clone.setAttribute('aria-hidden', 'true');
+      clone.classList.add('carousel-slide--clone');
+      track.appendChild(clone);
+    });
+
+    const allSlides = $$('.carousel-slide', track);
+    const half = allSlides.length / 2;
+    let page = 0;
 
     function perView() {
       const w = window.innerWidth;
       if (w <= 860) return 1;
-      if (w <= 1024) return 2;
-      return 4;
+      return 3;
     }
 
-    function maxIndex() {
-      return Math.max(0, slides.length - perView());
+    function jump(dir) {
+      const pv = perView();
+      page = (page + dir + half) % half;
+      const slideWidth = allSlides[0].getBoundingClientRect().width + 16;
+      track.style.animation = 'none';
+      track.style.transform = `translateX(-${page * pv * slideWidth}px)`;
+      // Restart marquee after a pause
+      clearTimeout(jump._t);
+      jump._t = setTimeout(() => {
+        track.style.animation = '';
+        track.style.transform = '';
+      }, 600);
     }
 
-    function buildDots() {
-      dotsWrap.innerHTML = '';
-      const count = maxIndex() + 1;
-      for (let i = 0; i < count; i++) {
-        const dot = document.createElement('button');
-        dot.className = 'carousel-dot' + (i === index ? ' active' : '');
-        dot.type = 'button';
-        dot.setAttribute('aria-label', `Ir a posición ${i + 1}`);
-        dot.addEventListener('click', () => goTo(i));
-        dotsWrap.appendChild(dot);
-      }
-    }
+    prevBtn.addEventListener('click', () => jump(-1));
+    nextBtn.addEventListener('click', () => jump(1));
 
-    function update() {
-      const slideWidth = slides[0].getBoundingClientRect().width + 16;
-      track.style.transform = `translateX(-${index * slideWidth}px)`;
-      prevBtn.disabled = index === 0;
-      nextBtn.disabled = index >= maxIndex();
-      buildDots();
-    }
-
-    function goTo(i) {
-      index = Math.max(0, Math.min(i, maxIndex()));
-      update();
-    }
-
-    prevBtn.addEventListener('click', () => goTo(index - 1));
-    nextBtn.addEventListener('click', () => goTo(index + 1));
-
-    let resizeTimer;
-    window.addEventListener('resize', () => {
-      clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(() => { index = Math.min(index, maxIndex()); update(); }, 150);
-    });
-
-    // Touch swipe support
-    let startX = 0;
-    track.addEventListener('touchstart', (e) => { startX = e.touches[0].clientX; }, { passive: true });
-    track.addEventListener('touchend', (e) => {
-      const diff = e.changedTouches[0].clientX - startX;
-      if (Math.abs(diff) > 50) goTo(index + (diff < 0 ? 1 : -1));
-    }, { passive: true });
-
-    update();
+    // Pause on hover/focus handled by CSS; ensure visibility for keyboard users
+    track.addEventListener('focusin', () => track.classList.add('is-paused'));
+    track.addEventListener('focusout', () => track.classList.remove('is-paused'));
   }
 
   screen.onShow = () => {
@@ -389,8 +390,10 @@ function mount(section) {
       open();
     }
     countersAnimated = false;
+    renderEvents();
   };
 
+  renderEvents();
   initCarousel();
 }
 

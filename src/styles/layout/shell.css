@@ -53,7 +53,7 @@
   display: flex; align-items: center; justify-content: center;
   flex: none;
 }
-.theme-toggle .icon-sun { display: none; }
+.theme-toggle .icon-sun { display: none; width: 20px; height: 20px; }
 .theme-toggle .icon-moon { display: block; width: 20px; height: 20px; color: var(--ink); }
 
 [data-theme="dark"] .theme-toggle .icon-sun { display: block; }

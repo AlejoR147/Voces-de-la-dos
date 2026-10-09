@@ -339,5 +339,5 @@ table.data tbody tr:hover td,
 [data-theme="dark"] .affinity-row,
 [data-theme="dark"] .affinity-label,
 [data-theme="dark"] .affinity-label span:last-child {
-  transition: background-color 300ms ease, color 300ms ease, border-color 300ms ease, box-shadow 300ms ease, transform 300ms ease, opacity 300ms ease;
+  transition: background-color 300ms ease, color 300ms ease, border-color 300ms ease;
 }
