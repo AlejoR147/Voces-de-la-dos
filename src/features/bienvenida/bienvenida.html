@@ -1,7 +1,6 @@
 <div class="landing" id="landing">
   <section class="hero">
     <div class="hero-bg" aria-hidden="true">
-      <img src="/images/fondo.webp" alt="" class="hero-bg-img" loading="eager">
       <div class="hero-overlay"></div>
     </div>
     <div class="hero-copy">
@@ -20,8 +19,7 @@
     </div>
     <div class="hero-visual" aria-hidden="true">
       <div class="hero-map">
-        <img src="/images/la-casa.webp" alt="Casa de la Cultura Santa Cruz" class="hero-map-img" loading="lazy">
-        <div class="hero-map-overlay"></div>
+        <div class="hero-map-grid" aria-hidden="true"></div>
         <span class="hero-pin hero-pin--purple" style="top:24%;left:22%;" data-tooltip="Casa de la Cultura"></span>
         <span class="hero-pin hero-pin--orange" style="top:52%;left:46%;" data-tooltip="Cancha La Frontera"></span>
         <span class="hero-pin hero-pin--blue" style="top:30%;left:72%;" data-tooltip="Galería Urbana"></span>
@@ -78,25 +76,44 @@
     </div>
   </section>
 
-  <section class="gallery-preview" aria-labelledby="gallery-title">
-    <h2 id="gallery-title" class="section-title">Momentos de la Comuna 2</h2>
-    <div class="gallery-grid">
-      <figure class="gallery-item">
-        <img src="/images/805887610_28699386423033263_5264764208461870612_n.webp" alt="Evento cultural en Santa Cruz" loading="lazy">
-        <figcaption>Festival comunitario</figcaption>
-      </figure>
-      <figure class="gallery-item">
-        <img src="/images/480206748_1201652974932723_7808526932218359151_n.webp" alt="Taller artístico en el barrio" loading="lazy">
-        <figcaption>Taller artístico</figcaption>
-      </figure>
-      <figure class="gallery-item">
-        <img src="/images/480045725_1201652861599401_7619096031282365528_n.webp" alt="Juventud participando en actividades" loading="lazy">
-        <figcaption>Juventud activa</figcaption>
-      </figure>
-      <figure class="gallery-item">
-        <img src="/images/teatro.webp" alt="Teatro y artes escénicas" loading="lazy">
-        <figcaption>Artes escénicas</figcaption>
-      </figure>
+  <section class="photo-carousel" aria-labelledby="carousel-title">
+    <h2 id="carousel-title" class="section-title">Momentos de la Comuna 2</h2>
+    <div class="carousel" data-carousel>
+      <button class="carousel-btn carousel-btn--prev" data-carousel-prev aria-label="Anterior">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <div class="carousel-viewport">
+        <div class="carousel-track" data-carousel-track>
+          <figure class="carousel-slide">
+            <img src="/images/805887610_28699386423033263_5264764208461870612_n.webp" alt="Evento cultural en Santa Cruz" loading="lazy">
+            <figcaption>Festival comunitario</figcaption>
+          </figure>
+          <figure class="carousel-slide">
+            <img src="/images/480206748_1201652974932723_7808526932218359151_n.webp" alt="Taller artístico en el barrio" loading="lazy">
+            <figcaption>Taller artístico</figcaption>
+          </figure>
+          <figure class="carousel-slide">
+            <img src="/images/480045725_1201652861599401_7619096031282365528_n.webp" alt="Juventud participando en actividades" loading="lazy">
+            <figcaption>Juventud activa</figcaption>
+          </figure>
+          <figure class="carousel-slide">
+            <img src="/images/teatro.webp" alt="Teatro y artes escénicas" loading="lazy">
+            <figcaption>Artes escénicas</figcaption>
+          </figure>
+          <figure class="carousel-slide">
+            <img src="/images/la-casa.webp" alt="Casa de la Cultura Santa Cruz" loading="lazy">
+            <figcaption>Casa de la Cultura</figcaption>
+          </figure>
+          <figure class="carousel-slide">
+            <img src="/images/plan-estrat-gico-de-cultura-de-la-comuna-2-santa-cruz-5323092-8.webp" alt="Plan estratégico de cultura de la Comuna 2" loading="lazy">
+            <figcaption>Plan cultural</figcaption>
+          </figure>
+        </div>
+      </div>
+      <button class="carousel-btn carousel-btn--next" data-carousel-next aria-label="Siguiente">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
+      </button>
+      <div class="carousel-dots" data-carousel-dots aria-hidden="true"></div>
     </div>
   </section>
 </div>

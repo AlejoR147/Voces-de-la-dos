@@ -38,30 +38,33 @@
     (function() {
       const toggle = document.getElementById('themeToggle');
       const html = document.documentElement;
-      
-      function applyTheme(theme) {
-        html.setAttribute('data-theme', theme);
-        localStorage.setItem('theme', theme);
+      const STORAGE_KEY = 'scvd-theme';
+
+      function getSystemTheme() {
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
       }
-      
-      // Load saved theme or detect system preference
-      const savedTheme = localStorage.getItem('theme');
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      const initialTheme = savedTheme || (prefersDark ? 'dark' : 'light');
-      applyTheme(initialTheme);
-      
+
+      function applyTheme(theme, save = false) {
+        html.setAttribute('data-theme', theme);
+        if (save) localStorage.setItem(STORAGE_KEY, theme);
+        else localStorage.removeItem(STORAGE_KEY);
+      }
+
+      // Initial: use saved choice or follow system
+      const savedTheme = localStorage.getItem(STORAGE_KEY);
+      applyTheme(savedTheme || getSystemTheme(), false);
+
       if (toggle) {
         toggle.addEventListener('click', () => {
-          const currentTheme = html.getAttribute('data-theme');
-          const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-          applyTheme(newTheme);
+          const current = html.getAttribute('data-theme');
+          applyTheme(current === 'dark' ? 'light' : 'dark', true);
         });
       }
-      
-      // Listen for system theme changes
+
+      // Follow system preference when user hasn't made a choice
       window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-        if (!localStorage.getItem('theme')) {
-          applyTheme(e.matches ? 'dark' : 'light');
+        if (!localStorage.getItem(STORAGE_KEY)) {
+          applyTheme(e.matches ? 'dark' : 'light', false);
         }
       });
     })();

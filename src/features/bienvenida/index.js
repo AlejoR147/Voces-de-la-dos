@@ -315,6 +315,74 @@ function mount(section) {
   }, { threshold: 0.3 });
   observer.observe(landing);
 
+  // === CAROUSEL ===
+  function initCarousel() {
+    const root = $('[data-carousel]', section);
+    if (!root) return;
+    const track = $('[data-carousel-track]', root);
+    const slides = $$('.carousel-slide', track);
+    const prevBtn = $('[data-carousel-prev]', root);
+    const nextBtn = $('[data-carousel-next]', root);
+    const dotsWrap = $('[data-carousel-dots]', root);
+    let index = 0;
+
+    function perView() {
+      const w = window.innerWidth;
+      if (w <= 860) return 1;
+      if (w <= 1024) return 2;
+      return 4;
+    }
+
+    function maxIndex() {
+      return Math.max(0, slides.length - perView());
+    }
+
+    function buildDots() {
+      dotsWrap.innerHTML = '';
+      const count = maxIndex() + 1;
+      for (let i = 0; i < count; i++) {
+        const dot = document.createElement('button');
+        dot.className = 'carousel-dot' + (i === index ? ' active' : '');
+        dot.type = 'button';
+        dot.setAttribute('aria-label', `Ir a posición ${i + 1}`);
+        dot.addEventListener('click', () => goTo(i));
+        dotsWrap.appendChild(dot);
+      }
+    }
+
+    function update() {
+      const slideWidth = slides[0].getBoundingClientRect().width + 16;
+      track.style.transform = `translateX(-${index * slideWidth}px)`;
+      prevBtn.disabled = index === 0;
+      nextBtn.disabled = index >= maxIndex();
+      buildDots();
+    }
+
+    function goTo(i) {
+      index = Math.max(0, Math.min(i, maxIndex()));
+      update();
+    }
+
+    prevBtn.addEventListener('click', () => goTo(index - 1));
+    nextBtn.addEventListener('click', () => goTo(index + 1));
+
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => { index = Math.min(index, maxIndex()); update(); }, 150);
+    });
+
+    // Touch swipe support
+    let startX = 0;
+    track.addEventListener('touchstart', (e) => { startX = e.touches[0].clientX; }, { passive: true });
+    track.addEventListener('touchend', (e) => {
+      const diff = e.changedTouches[0].clientX - startX;
+      if (Math.abs(diff) > 50) goTo(index + (diff < 0 ? 1 : -1));
+    }, { passive: true });
+
+    update();
+  }
+
   screen.onShow = () => {
     if (location.hash === '#bienvenida' && sessionStorage.getItem('scvd:open-signup')) {
       sessionStorage.removeItem('scvd:open-signup');
@@ -322,6 +390,8 @@ function mount(section) {
     }
     countersAnimated = false;
   };
+
+  initCarousel();
 }
 
 export const screen = {
