@@ -3,8 +3,9 @@
 .chip {
   display: inline-flex; align-items: center; gap: 6px;
   padding: 8px 14px; border-radius: 999px; border: 1.6px solid var(--line);
-  background: #fff; font-size: 13px; font-weight: 600; color: var(--ink);
+  background: var(--card); font-size: 13px; font-weight: 600; color: var(--ink);
   transition: all .18s ease; user-select: none; white-space: nowrap;
 }
 .chip:hover { border-color: var(--purple); }
 .chip.selected { background: var(--purple); border-color: var(--purple); color: #fff; }
+.chip:focus-visible { outline: none; box-shadow: var(--focus-ring); }

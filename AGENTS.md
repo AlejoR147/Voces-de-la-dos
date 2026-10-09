@@ -7,7 +7,7 @@
 - Don't open `index.html` via `file://`. ES modules and `?raw` imports need Vite.
 - UI copy and data are in Spanish (Comuna 2 Santa Cruz, Medellín). Prices are COP, formatted with `es-CO`.
 - `docs/legacy/Santa_Cruz_Vive_Digital_Prototipo.html` is the original single-file prototype. It is reference only, so don't edit it.
-- Git repo on `main`. Commit only when asked, with short conventional messages (`feat:`, `fix:`, `refactor:`, `chore:`).
+- Git repo on `main`. Commit only when asked, with short conventional messages (`feat:`, `fix:`, `refactor:`, `chore:`). NEVER push to remote without explicit user consent.
 
 ## Architecture
 - `src/main.js` imports the global CSS and calls `app/App.js`. `App.js` creates one `<section class="screen" id="screen-<id>" data-screen="<id>">` per screen and calls its `mount(section)`.

@@ -1,41 +1,66 @@
-<div class="page-head">
-  <div>
-    <h1 class="page-title">Moderación</h1>
-    <p class="page-sub">Revisa los eventos enviados por las organizaciones, aprueba proyectos de colectivos juveniles y publica eventos directamente.</p>
-  </div>
-  <div class="page-actions">
-    <button class="btn btn-accent" type="button" id="createEventBtn"></button>
-  </div>
-</div>
+<div class="page">
+  <header class="page-header">
+    <div class="page-title-row">
+      <h1 class="page-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Moderación
+      </h1>
+      <p class="page-sub">Revisa eventos enviados por organizaciones, aprueba proyectos de colectivos y publica eventos directamente.</p>
+    </div>
+    <div class="page-actions">
+      <button class="btn btn-primary" type="button" id="createEventBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Crear evento
+      </button>
+    </div>
+  </header>
 
-<div class="grid grid-2">
-  <div class="stack stack-lg">
-    <section class="card">
-      <div class="row row-between card-head">
-        <h3 class="card-title">Eventos por aprobar</h3>
-        <span class="badge badge-accent" id="pendingEventsBadge">0</span>
-      </div>
-      <div class="stack" id="pendingEvents"></div>
-    </section>
-    <section class="card">
-      <div class="row row-between card-head">
-        <h3 class="card-title">Proyectos pendientes</h3>
-        <span class="badge" id="approvedBadge">0 aprobados</span>
-      </div>
-      <div class="stack" id="pendingList"></div>
-    </section>
-  </div>
-  <div class="stack stack-lg">
-    <section class="card">
-      <h3 class="card-title">Todos los eventos</h3>
-      <div class="stack" id="allEvents"></div>
-    </section>
-    <section class="card">
-      <div class="row row-between card-head">
-        <h3 class="card-title">Registro de actividad</h3>
-        <span class="badge" id="accountsBadge"></span>
-      </div>
-      <ul class="audit" id="auditLog"></ul>
-    </section>
+  <div class="admin-grid">
+    <main class="admin-main">
+      <section class="card panel queue" aria-labelledby="queueTitle">
+        <header class="panel-header">
+          <h2 id="queueTitle" class="panel-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            Eventos por revisar
+          </h2>
+          <span class="badge badge-magenta" id="pendingEventsBadge">0 pendientes</span>
+        </header>
+        <div class="queue-list" id="pendingEvents" role="list"></div>
+      </section>
+
+      <section class="card panel queue" aria-labelledby="projectsTitle">
+        <header class="panel-header">
+          <h2 id="projectsTitle" class="panel-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Proyectos de colectivos
+          </h2>
+          <span class="badge badge-cyan" id="approvedBadge">0 aprobados</span>
+        </header>
+        <div class="queue-list" id="pendingList" role="list"></div>
+      </section>
+    </main>
+
+    <aside class="admin-sidebar">
+      <section class="card panel" aria-labelledby="allEventsTitle">
+        <header class="panel-header">
+          <h2 id="allEventsTitle" class="panel-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            Todos los eventos
+          </h2>
+        </header>
+        <div class="event-list" id="allEvents" role="list"></div>
+      </section>
+
+      <section class="card panel" aria-labelledby="auditTitle">
+        <header class="panel-header">
+          <h2 id="auditTitle" class="panel-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            Registro de actividad
+          </h2>
+          <span class="badge badge-neutral" id="accountsBadge"></span>
+        </header>
+        <ul class="audit-list" id="auditLog" role="list"></ul>
+      </section>
+    </aside>
   </div>
 </div>

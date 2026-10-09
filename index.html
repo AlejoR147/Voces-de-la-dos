@@ -1,27 +1,32 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="theme-color" content="#2A1854">
+  <meta name="theme-color" content="#6C3CE0">
   <meta name="description" content="Descubre talleres, eventos y espacios culturales de la Comuna 2 Santa Cruz, Medellín.">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://tile.openstreetmap.org https://*.tile.openstreetmap.org; connect-src 'self' https://routing.openstreetmap.de ws://localhost:* ws://127.0.0.1:*; object-src 'none'; base-uri 'self'; form-action 'self'">
-  <title>Santa Cruz Vive Digital</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%236C3CE0'/%3E%3Ctext x='32' y='42' font-size='28' font-family='Arial' font-weight='700' text-anchor='middle' fill='white'%3ESC%3C/text%3E%3C/svg%3E">
+  <title>Voces de la dos</title>
+  <link rel="icon" type="image/png" href="/icono.png">
+  <link rel="apple-touch-icon" href="/icono.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
   <header class="app-header">
-    <a class="brand" href="#inicio" aria-label="Santa Cruz Vive Digital">
-      <span class="brand-mark">SC</span>
-      <span class="brand-text"><b>Santa Cruz Vive Digital</b><small>Comuna 2 · Medellín</small></span>
+    <a class="brand" href="#inicio" aria-label="Voces de la dos">
+      <span class="brand-mark"><img src="/icono.png" alt="" width="38" height="38"></span>
+      <span class="brand-text"><b>Voces de la dos</b><small>Comuna 2 · Medellín</small></span>
     </a>
     <nav class="nav" id="nav" aria-label="Principal" hidden></nav>
     <a class="user-chip" id="userChip" href="#perfil" hidden></a>
     <button class="icon-btn" type="button" id="logoutBtn" aria-label="Cerrar sesión" title="Cerrar sesión" hidden></button>
+    <button class="icon-btn theme-toggle" id="themeToggle" type="button" aria-label="Cambiar tema" title="Cambiar tema">
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
     <a class="btn btn-outline btn-sm header-login" id="loginLink" href="#acceso" hidden>Iniciar sesión</a>
   </header>
 

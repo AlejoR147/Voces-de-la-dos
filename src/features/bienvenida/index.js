@@ -1,6 +1,6 @@
 import './bienvenida.css';
 import template from './bienvenida.html?raw';
-import { $, delegate, escapeHtml } from '../../core/dom.js';
+import { $, $$, delegate, escapeHtml } from '../../core/dom.js';
 import {
   ACCOUNT_TYPE_OPTIONS, AVAILABILITY_OPTIONS, ORG_TYPES, PUBLIC_SCREEN, ROLES, SECURITY,
 } from '../../config/constants.js';
@@ -10,6 +10,10 @@ import { registerAccount, validateEmail, validatePassword } from '../../services
 import { showToast } from '../../shared/components/toast.js';
 import { bindPasswordToggle } from '../../shared/components/passwordField.js';
 import { icon } from '../../shared/icons.js';
+import { contentStore, getContent } from '../../state/contentStore.js';
+import { publishedEvents, isPast } from '../../services/events.js';
+import { eventCard } from '../../shared/components/eventCard.js';
+import { bindEnrollment } from '../../shared/components/enrollButton.js';
 
 const STEP_COUNT = 4;
 
@@ -176,6 +180,7 @@ function mount(section) {
 
   const landing = $('#landing', section);
   const onboarding = $('#onboarding', section);
+  const eventsList = $('#homeEvents', section);
   let step = 0;
   let draft = initialDraft();
   let error = '';
@@ -253,7 +258,7 @@ function mount(section) {
     render();
   }
 
-  $('[data-start]', section).addEventListener('click', open);
+  $$('[data-start]', section).forEach((button) => button.addEventListener('click', open));
   delegate(onboarding, 'click', '[data-next]', next);
   delegate(onboarding, 'click', '[data-back]', back);
   delegate(onboarding, 'click', '[data-role]', (_event, button) => {
@@ -284,12 +289,162 @@ function mount(section) {
     }
   });
 
+  // === STATS COUNTERS ===
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let countersAnimated = false;
+
+  function animateCounters() {
+    if (countersAnimated) return;
+    countersAnimated = true;
+    $$('.stat-number', landing).forEach((el) => {
+      const target = parseInt(el.dataset.count, 10);
+      if (isNaN(target)) return;
+      const finalText = `+${target.toLocaleString('es-CO')}`;
+      if (reduceMotion) {
+        el.textContent = finalText;
+        return;
+      }
+      const duration = 1400;
+      const start = performance.now();
+      function tick(now) {
+        const progress = Math.min((now - start) / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        const current = Math.floor(target * eased);
+        el.textContent = `+${current.toLocaleString('es-CO')}`;
+        if (progress < 1) requestAnimationFrame(tick);
+        else el.textContent = finalText;
+      }
+      requestAnimationFrame(tick);
+    });
+  }
+
+  const statsTarget = $('.hero-stats', landing) || landing;
+  const statsObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        setTimeout(animateCounters, 400);
+        statsObserver.disconnect();
+      }
+    });
+  }, { threshold: 0.3 });
+  statsObserver.observe(statsTarget);
+
+  // === EVENTS PREVIEW ===
+  function renderEvents() {
+    if (!eventsList) return;
+    const content = getContent();
+    const user = content;
+    const upcoming = publishedEvents(content)
+      .filter((event) => !isPast(event))
+      .slice(0, 3);
+    eventsList.innerHTML = upcoming.length
+      ? upcoming.map((event) => eventCard(event, content, { enroll: false })).join('')
+      : '<p class="empty-events">No hay eventos próximos. ¡Vuelve pronto!</p>';
+    bindEnrollment(eventsList);
+  }
+
+  // === INFINITE AUTO CAROUSEL (rAF, deterministic) ===
+  function initCarousel() {
+    const root = $('[data-carousel]', section);
+    if (!root || root.dataset.ready) return;
+    root.dataset.ready = 'true';
+    const track = $('[data-carousel-track]', root);
+    const prevBtn = $('[data-carousel-prev]', root);
+    const nextBtn = $('[data-carousel-next]', root);
+
+    $$('.carousel-slide', track).forEach((slide) => {
+      const clone = slide.cloneNode(true);
+      clone.setAttribute('aria-hidden', 'true');
+      track.appendChild(clone);
+    });
+
+    const SPEED = 80;
+    let offset = 0;
+    let last = 0;
+    let hold = false;
+    let inView = true;
+    let resumeTimer = 0;
+
+    function halfWidth() { return track.scrollWidth / 2; }
+
+    function normalize() {
+      const half = halfWidth();
+      if (half > 0) {
+        offset %= half;
+        if (offset > 0) offset -= half;
+      }
+    }
+
+    function paint() { track.style.transform = `translateX(${offset}px)`; }
+
+    function tick(now) {
+      if (!last) last = now;
+      const delta = Math.min((now - last) / 1000, 0.05);
+      last = now;
+      if (!reduceMotion && inView && !hold) {
+        offset -= SPEED * delta;
+        normalize();
+        paint();
+      }
+      requestAnimationFrame(tick);
+    }
+
+    function pause(ms = 0) {
+      hold = true;
+      clearTimeout(resumeTimer);
+      if (ms > 0) resumeTimer = setTimeout(() => { hold = false; }, ms);
+    }
+
+    function nudge(direction) {
+      const first = track.querySelector('.carousel-slide');
+      const step = first ? first.getBoundingClientRect().width + 16 : 300;
+      offset += direction * step;
+      normalize();
+      paint();
+      pause(6000);
+    }
+
+    prevBtn?.addEventListener('click', () => nudge(1));
+    nextBtn?.addEventListener('click', () => nudge(-1));
+    root.addEventListener('mouseenter', () => pause());
+    root.addEventListener('mouseleave', () => { hold = false; });
+    root.addEventListener('focusin', () => pause());
+    root.addEventListener('focusout', () => { hold = false; });
+    root.addEventListener('touchstart', () => pause(), { passive: true });
+    root.addEventListener('touchend', () => { hold = false; }, { passive: true });
+
+    new IntersectionObserver((entries) => {
+      entries.forEach((entry) => { inView = entry.isIntersecting; });
+    }, { threshold: 0.05 }).observe(root);
+
+    requestAnimationFrame(tick);
+  }
+
+  // === SCROLL REVEALS ===
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('revealed');
+        revealObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+  $$('.timeline, .features-grid, .events-preview, .photo-carousel, .cta-final', section)
+    .forEach((el) => revealObserver.observe(el));
+
   screen.onShow = () => {
     if (location.hash === '#bienvenida' && sessionStorage.getItem('scvd:open-signup')) {
       sessionStorage.removeItem('scvd:open-signup');
       open();
     }
+    renderEvents();
+    if (section.offsetParent !== null && !landing.hidden) {
+      requestAnimationFrame(animateCounters);
+    }
   };
+
+  renderEvents();
+  initCarousel();
 }
 
 export const screen = {

@@ -9,7 +9,7 @@ import { enrollButton } from './enrollButton.js';
 function sideControl(event, content, { enroll, status }) {
   if (status) return `<span class="status ${event.status}">${STATUS_LABELS[event.status]}</span>`;
   if (!enroll) return '';
-  if (isPast(event)) return '<span class="status fin">Finalizado</span>';
+  if (isPast(event)) return '<span class="status status-finished">Finalizado</span>';
   const enrolled = content.enrolled.includes(eventEnrollmentId(event));
   if (!enrolled && eventStats(event, content).spotsLeft === 0) {
     return '<button class="btn btn-outline btn-sm" type="button" disabled>Cupo lleno</button>';
@@ -22,13 +22,14 @@ function sideControl(event, content, { enroll, status }) {
  */
 export function eventCard(event, content, { enroll = false, status = false } = {}) {
   const { day, month } = dateParts(event.date);
-  const { registered } = eventStats(event, content);
+  const { registered, spotsLeft, occupancy } = eventStats(event, content);
   const place = getPlace(event.placeId);
   const where = place ? place.name : event.barrio;
-  const spots = event.status === 'approved' ? ` · ${registered}/${event.capacity} cupos` : ` · cupo ${event.capacity}`;
+  const isPastEvent = isPast(event);
+  const spots = event.status === 'approved' ? ` ${registered}/${event.capacity} (${occupancy}%)` : ` Cupo ${event.capacity}`;
 
-  return `<div class="event${isPast(event) ? ' event--past' : ''}">
-    <div class="event-date"><b>${day}</b>${month}</div>
+  return `<div class="event${isPastEvent ? ' event--past' : ''}" data-event-id="${escapeHtml(event.id)}">
+    <div class="event-date"><b>${day}</b><span>${month}</span></div>
     <div class="event-body">
       <b>${escapeHtml(event.title)}</b>
       <span>${escapeHtml(where)} · ${escapeHtml(event.barrio)}${spots}</span>
