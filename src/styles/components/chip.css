@@ -9,3 +9,6 @@
 .chip:hover { border-color: var(--purple); }
 .chip.selected { background: var(--purple); border-color: var(--purple); color: #fff; }
 .chip:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+
+/* En modo oscuro el acento es claro: el texto debe ser oscuro para leerse. */
+[data-theme="dark"] .chip.selected { color: #1A1625; }

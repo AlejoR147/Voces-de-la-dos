@@ -18,7 +18,6 @@
   width: 38px; height: 38px; border-radius: 12px;
   display: flex; align-items: center; justify-content: center;
   overflow: hidden; flex: none;
-  box-shadow: 0 6px 14px -6px rgba(108, 60, 224, .7);
 }
 .brand-mark img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .brand-text { display: flex; flex-direction: column; line-height: 1.15; }

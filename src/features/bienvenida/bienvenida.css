@@ -222,6 +222,14 @@
 /* === EVENTS PREVIEW === */
 .events-preview .event-list { display: flex; flex-direction: column; gap: 12px; }
 
+/* === RENDER OPTIMIZATION === */
+.events-preview,
+.photo-carousel,
+.cta-final {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 500px;
+}
+
 /* === SCROLL REVEAL (sections fade up on entry) === */
 .events-preview,
 .photo-carousel,
@@ -466,7 +474,7 @@
 
 .carousel-track {
   display: flex;
-  gap: 16px;
+  gap: 10px;
   width: max-content;
   will-change: transform;
 }
@@ -478,11 +486,13 @@
   border-radius: var(--radius);
   overflow: hidden;
   background: var(--card);
+  border: 1px solid var(--line);
   box-shadow: var(--shadow-sm);
   aspect-ratio: 4 / 3;
 }
 
 .carousel-slide img {
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -567,6 +577,14 @@
   position: relative;
 }
 
+.cta-roles {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+  position: relative;
+}
+
 .cta-final .btn-xl {
   background: #fff;
   color: var(--purple);
@@ -579,6 +597,11 @@
   transform: translateY(-2px);
   box-shadow: 0 12px 32px -8px rgba(0, 0, 0, .3);
 }
+
+/* En modo oscuro el morado es claro: texto oscuro sobre superficies claras. */
+[data-theme="dark"] .hero-float { background: var(--card); }
+[data-theme="dark"] .hero-pin::before { background: #1A1625; }
+[data-theme="dark"] .cta-final .btn-xl { color: #3B2170; }
 
 .btn-xl { padding: 16px 36px; font-size: 17px; border-radius: 14px; }
 
@@ -652,7 +675,7 @@
   .hero-actions { flex-direction: column; }
   .hero-actions .btn { width: 100%; justify-content: center; }
   .hero-map { border-radius: 16px; min-height: 240px; }
-  .hero-float { padding: 10px 12px; gap: 8px; }
+  .hero-float { padding: 10px 12px; gap: 8px; backdrop-filter: none; }
   .hero-float > svg { width: 18px; height: 18px; }
   .hero-float b { font-size: 12px; }
   .hero-float small { font-size: 10px; }
@@ -660,6 +683,8 @@
   .section-header { flex-direction: column; align-items: flex-start; gap: 12px; }
   .carousel-slide { width: 75vw; }
   .cta-final { padding: 48px 20px; border-radius: 20px; }
+  .cta-roles { flex-direction: column; }
+  .cta-roles .btn { width: 100%; justify-content: center; }
   .role-options { grid-template-columns: 1fr; }
   .wizard { padding: 22px; }
   .form-grid { grid-template-columns: 1fr; }
@@ -690,25 +715,4 @@
 .role-option b { font: 700 15px 'Poppins', sans-serif; }
 .role-option span:last-child { color: var(--muted); font-size: 12.5px; }
 
-.field { display: flex; flex-direction: column; gap: 8px; }
-.field-label { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
-.field-hint { font-size: 12px; color: var(--muted); }
-.input, select, textarea.input {
-  width: 100%; padding: 12px 14px; border-radius: 12px; border: 1.6px solid var(--line);
-  font-size: 16px; background: var(--card); color: var(--ink); transition: border-color .18s ease, box-shadow .18s ease;
-}
-textarea.input { resize: vertical; min-height: 84px; font-family: inherit; }
-.input:focus, select:focus { outline: none; border-color: var(--purple); box-shadow: var(--focus-ring); }
-.input[aria-invalid="true"] { border-color: var(--red); }
-
-.chip-group { display: flex; flex-wrap: wrap; gap: 8px; }
-.chip {
-  padding: 8px 14px; font-size: 13px; font-weight: 600;
-  border: 1.6px solid var(--line); border-radius: 999px; background: var(--card); color: var(--ink);
-  transition: all .18s ease; cursor: pointer;
-}
-.chip:hover { border-color: var(--purple); }
-.chip.selected { background: var(--purple); border-color: var(--purple); color: #fff; }
-
-.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.form-grid .span-2 { grid-column: span 2; }
+/* Field, input, chip y form-grid vienen de styles/components (form.css, chip.css). */

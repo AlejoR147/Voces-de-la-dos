@@ -5,3 +5,5 @@ dist/
 .env
 .env.*
 *.local
+# Fuentes originales de imágenes (los WebP optimizados viven en public/images/)
+src/Imagenes/

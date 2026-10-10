@@ -7,7 +7,7 @@ import { priceBadge } from './priceBadge.js';
 import { enrollButton } from './enrollButton.js';
 
 function sideControl(event, content, { enroll, status }) {
-  if (status) return `<span class="status ${event.status}">${STATUS_LABELS[event.status]}</span>`;
+  if (status) return `<span class="status status-${event.status}">${STATUS_LABELS[event.status]}</span>`;
   if (!enroll) return '';
   if (isPast(event)) return '<span class="status status-finished">Finalizado</span>';
   const enrolled = content.enrolled.includes(eventEnrollmentId(event));

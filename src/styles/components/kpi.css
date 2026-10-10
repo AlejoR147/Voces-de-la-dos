@@ -1,6 +1,16 @@
 .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 16px; }
 .kpi { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 18px; box-shadow: var(--shadow-sm); transition: border-color 200ms, box-shadow 200ms, transform 200ms; }
 .kpi:hover { border-color: var(--purple); box-shadow: var(--shadow-card); transform: translateY(-2px); }
+.kpi-top {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 12px; margin-bottom: 12px;
+}
+.kpi-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px; border-radius: 12px; flex: none;
+  background: var(--purple-soft); color: var(--purple);
+}
+.kpi-icon .icon { width: 20px; height: 20px; }
 .kpi .num { font: 700 28px 'Poppins', sans-serif; color: var(--ink); font-variant-numeric: tabular-nums; }
 .kpi .lbl { font-size: 12.5px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; margin-top: 4px; }
 .kpi .delta { font-size: 12px; color: var(--green); font-weight: 700; margin-top: 6px; }

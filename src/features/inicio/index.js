@@ -128,7 +128,7 @@ function mount(section) {
     els.sub.textContent = summary.sub;
     els.profile.innerHTML = profileCardHtml(user, affinities);
     els.cta.innerHTML = `<h3>${summary.cta.title}</h3><p>${summary.cta.text}</p><a class="btn btn-light" href="${summary.cta.href}">${summary.cta.label}</a>`;
-    els.stats.innerHTML = summary.stats.map(([value, label]) => `<div class="stat"><b>${value}</b><span>${label}</span></div>`).join('');
+    els.stats.innerHTML = summary.stats.map(([value, label]) => `<div class="stat-card"><b>${value}</b><span>${label}</span></div>`).join('');
 
     els.recsSection.hidden = user.role !== ROLES.CONSUMER;
     els.recs.innerHTML = buildRecommendations({ affinities })

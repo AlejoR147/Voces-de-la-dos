@@ -23,3 +23,10 @@
 .avatars .a.orange { background: var(--orange); }
 .avatars .a.me { background: var(--ink); }
 .avatars .a.more { background: var(--muted); }
+
+/* En modo oscuro los fondos de avatar son claros: el texto debe ser oscuro. */
+[data-theme="dark"] .avatars .a.purple,
+[data-theme="dark"] .avatars .a.blue,
+[data-theme="dark"] .avatars .a.orange,
+[data-theme="dark"] .avatars .a.me,
+[data-theme="dark"] .avatars .a.more { color: #1A1625; }
