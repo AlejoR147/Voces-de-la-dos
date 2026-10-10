@@ -13,9 +13,11 @@ import { formatNumber, formatPrice, isFree } from '../../utils/format.js';
 import { showToast } from '../../shared/components/toast.js';
 import { icon } from '../../shared/icons.js';
 
+const KPI_ICONS = { youth: 'users', activities: 'sparkles', events: 'calendar', attendance: 'check' };
+
 function kpiCard({ id, value, label, delta }) {
   const display = typeof value === 'number' ? formatNumber(value) : value;
-  return `<div class="kpi"><div class="num"${id === 'youth' ? ' id="kpiJovenes"' : ''}>${display}</div><div class="lbl">${label}</div><div class="delta">${delta}</div></div>`;
+  return `<div class="kpi"><div class="kpi-top"><div class="num"${id === 'youth' ? ' id="kpiJovenes"' : ''}>${display}</div><span class="kpi-icon" aria-hidden="true">${icon(KPI_ICONS[id] ?? 'chart', 20)}</span></div><div class="lbl">${label}</div><div class="delta">${delta}</div></div>`;
 }
 
 function donut(segments, note = '') {
@@ -50,8 +52,8 @@ function reportRows() {
 function eventRow({ name, organizer, barrio, date, enrolled, price, finished }) {
   return `<tr>
     <td>${escapeHtml(name)}</td><td>${escapeHtml(organizer)}</td><td>${escapeHtml(barrio)}</td><td>${date}</td><td>${enrolled}</td>
-    <td><span class="status ${isFree(price) ? 'free' : 'paid'}">${formatPrice(price)}</span></td>
-    <td><span class="status ${finished ? 'fin' : 'act'}">${finished ? 'Finalizado' : 'Activo'}</span></td>
+    <td><span class="status status-${isFree(price) ? 'free' : 'paid'}">${formatPrice(price)}</span></td>
+    <td><span class="status ${finished ? 'status-finished' : 'status-active'}">${finished ? 'Finalizado' : 'Activo'}</span></td>
   </tr>`;
 }
 

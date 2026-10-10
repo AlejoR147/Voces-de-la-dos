@@ -11,8 +11,8 @@ import { createEventModal } from '../../shared/components/eventModal.js';
 import { showToast } from '../../shared/components/toast.js';
 import { icon } from '../../shared/icons.js';
 
-function kpi(value, label, note) {
-  return `<div class="kpi"><div class="num">${value}</div><div class="lbl">${label}</div><div class="delta">${note}</div></div>`;
+function kpi(value, label, note, ic) {
+  return `<div class="kpi"><div class="kpi-top"><div class="num">${value}</div><span class="kpi-icon" aria-hidden="true">${icon(ic, 20)}</span></div><div class="lbl">${label}</div><div class="delta">${note}</div></div>`;
 }
 
 function summarize(events, content) {
@@ -36,7 +36,7 @@ function occupancyRow(event, content) {
 function statusSummary(events) {
   return Object.values(EVENT_STATUS).map((status) => {
     const count = events.filter((event) => event.status === status).length;
-    return `<div class="status-row"><span class="status ${status}">${STATUS_LABELS[status]}</span><b>${count}</b></div>`;
+    return `<div class="status-row"><span class="status status-${status}">${STATUS_LABELS[status]}</span><b>${count}</b></div>`;
   }).join('');
 }
 
@@ -46,7 +46,7 @@ function eventRow(event, content) {
   return `<tr>
     <td>${escapeHtml(event.title)}</td>
     <td>${formatEventDate(event.date)}</td>
-    <td><span class="status ${event.status}">${STATUS_LABELS[event.status]}</span></td>
+    <td><span class="status status-${event.status}">${STATUS_LABELS[event.status]}</span></td>
     <td>${published ? `${registered}/${event.capacity}` : '—'}</td>
     <td>${formatPrice(event.price)}</td>
     <td>${published ? `$${formatNumber(revenue)}` : '—'}</td>
@@ -75,10 +75,10 @@ function mount(section) {
     const summary = summarize(events, content);
 
     els.kpis.innerHTML = [
-      kpi(events.length, 'Eventos creados', `${summary.published} publicados · ${summary.pending} en revisión`),
-      kpi(formatNumber(summary.registered), 'Inscritos totales', 'En eventos publicados'),
-      kpi(summary.occupancy === null ? '—' : `${summary.occupancy}%`, 'Ocupación media', 'Inscritos sobre cupo'),
-      kpi(`$${formatNumber(summary.revenue)}`, 'Ingresos estimados', 'Inscritos × precio'),
+      kpi(events.length, 'Eventos creados', `${summary.published} publicados · ${summary.pending} en revisión`, 'calendar'),
+      kpi(formatNumber(summary.registered), 'Inscritos totales', 'En eventos publicados', 'users'),
+      kpi(summary.occupancy === null ? '—' : `${summary.occupancy}%`, 'Ocupación media', 'Inscritos sobre cupo', 'chart'),
+      kpi(`$${formatNumber(summary.revenue)}`, 'Ingresos estimados', 'Inscritos × precio', 'money'),
     ].join('');
 
     const published = events.filter(({ status }) => status === EVENT_STATUS.APPROVED);

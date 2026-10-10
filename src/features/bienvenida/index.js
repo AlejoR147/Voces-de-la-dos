@@ -10,7 +10,7 @@ import { registerAccount, validateEmail, validatePassword } from '../../services
 import { showToast } from '../../shared/components/toast.js';
 import { bindPasswordToggle } from '../../shared/components/passwordField.js';
 import { icon } from '../../shared/icons.js';
-import { contentStore, getContent } from '../../state/contentStore.js';
+import { getContent } from '../../state/contentStore.js';
 import { publishedEvents, isPast } from '../../services/events.js';
 import { eventCard } from '../../shared/components/eventCard.js';
 import { bindEnrollment } from '../../shared/components/enrollButton.js';
@@ -198,9 +198,10 @@ function mount(section) {
     if (field) $(`[data-field="${field}"]`, onboarding)?.focus();
   }
 
-  function open() {
+  function open(presetRole) {
     step = 0;
     draft = initialDraft();
+    if (presetRole) draft.role = presetRole;
     error = '';
     busy = false;
     landing.hidden = true;
@@ -258,7 +259,9 @@ function mount(section) {
     render();
   }
 
-  $$('[data-start]', section).forEach((button) => button.addEventListener('click', open));
+  $$('[data-start]', section).forEach((button) => button.addEventListener('click', () => open()));
+  $('[data-start-consumer]', section)?.addEventListener('click', () => open(ROLES.CONSUMER));
+  $('[data-start-manager]', section)?.addEventListener('click', () => open(ROLES.MANAGER));
   delegate(onboarding, 'click', '[data-next]', next);
   delegate(onboarding, 'click', '[data-back]', back);
   delegate(onboarding, 'click', '[data-role]', (_event, button) => {
@@ -333,7 +336,6 @@ function mount(section) {
   function renderEvents() {
     if (!eventsList) return;
     const content = getContent();
-    const user = content;
     const upcoming = publishedEvents(content)
       .filter((event) => !isPast(event))
       .slice(0, 3);
@@ -397,7 +399,7 @@ function mount(section) {
 
     function nudge(direction) {
       const first = track.querySelector('.carousel-slide');
-      const step = first ? first.getBoundingClientRect().width + 16 : 300;
+      const step = first ? first.getBoundingClientRect().width + 10 : 300;
       offset += direction * step;
       normalize();
       paint();
@@ -421,6 +423,18 @@ function mount(section) {
   }
 
   // === SCROLL REVEALS ===
+  const revealTargets = $$('.timeline, .features-grid, .events-preview, .photo-carousel, .cta-final', section);
+
+  function revealVisible() {
+    revealTargets.forEach((el) => {
+      if (el.classList.contains('revealed')) return;
+      const rect = el.getBoundingClientRect();
+      if (rect.top < window.innerHeight * 0.92 && rect.bottom > 0) {
+        el.classList.add('revealed');
+      }
+    });
+  }
+
   const revealObserver = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
       if (entry.isIntersecting) {
@@ -429,8 +443,19 @@ function mount(section) {
       }
     });
   }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
-  $$('.timeline, .features-grid, .events-preview, .photo-carousel, .cta-final', section)
-    .forEach((el) => revealObserver.observe(el));
+  revealTargets.forEach((el) => revealObserver.observe(el));
+
+  // Fallback final: si el observer fallara, el scroll revela igual.
+  let scrollQueued = false;
+  window.addEventListener('scroll', () => {
+    if (scrollQueued || landing.hidden) return;
+    scrollQueued = true;
+    requestAnimationFrame(() => {
+      scrollQueued = false;
+      revealVisible();
+      if (section.offsetParent !== null) animateCounters();
+    });
+  }, { passive: true });
 
   screen.onShow = () => {
     if (location.hash === '#bienvenida' && sessionStorage.getItem('scvd:open-signup')) {
@@ -440,11 +465,13 @@ function mount(section) {
     renderEvents();
     if (section.offsetParent !== null && !landing.hidden) {
       requestAnimationFrame(animateCounters);
+      requestAnimationFrame(revealVisible);
     }
   };
 
   renderEvents();
   initCarousel();
+  requestAnimationFrame(revealVisible);
 }
 
 export const screen = {

@@ -73,7 +73,7 @@
 
 .panel-title svg { width: 22px; height: 22px; color: var(--purple); flex-shrink: 0; }
 
-.queue-list { display: flex; flex-direction: column; gap: 12px; padding: 8px 0; }
+.queue-list { display: flex; flex-direction: column; gap: 12px; padding: 16px 20px 20px; }
 
 .queue-item {
   display: grid;
@@ -116,8 +116,24 @@
 
 .queue-item .btn { padding: 8px 14px; font-size: 12px; }
 
+/* Decision badges (project already reviewed) */
+.decision {
+  display: inline-flex; align-items: center; flex: none;
+  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
+  padding: 4px 10px; border-radius: 999px; border: 1px solid;
+}
+.decision.approved { background: var(--green-soft); color: var(--green); border-color: var(--green); }
+.decision.rejected { background: var(--red-soft); color: var(--red); border-color: var(--red); }
+
 /* Audit list */
-.audit-list { display: flex; flex-direction: column; gap: 8px; padding: 8px 0; }
+.audit-list { display: flex; flex-direction: column; gap: 8px; padding: 16px 20px 20px; list-style: none; margin: 0; }
+
+.audit-panel { margin-top: 24px; }
+
+.panel-tools { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+.panel-foot { display: flex; justify-content: center; padding: 4px 20px 20px; }
+.panel-foot[hidden] { display: none; }
 
 .audit-item {
   display: flex;
@@ -166,6 +182,8 @@
 .audit-meta { font-size: 12px; color: var(--muted); line-height: 1.5; }
 
 /* Event list in sidebar */
+.admin-events { padding: 16px 20px 20px; }
+
 .event-list .event {
   padding: 14px 16px;
   gap: 12px;

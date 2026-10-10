@@ -43,3 +43,10 @@
 .status-finished { background: var(--bg-secondary); color: var(--muted); border-color: var(--line); }
 .status-free { background: var(--green-soft); color: var(--green); border-color: var(--green); }
 .status-paid { background: var(--orange-soft); color: #C2540F; border-color: var(--orange); }
+
+/* En modo oscuro el marrón #C2540F no se lee sobre fondos oscuros: usar el naranja claro. */
+[data-theme="dark"] .badge-solid-magenta { color: #1A1625; }
+[data-theme="dark"] .badge-amber,
+[data-theme="dark"] .price-badge.paid,
+[data-theme="dark"] .status-pending,
+[data-theme="dark"] .status-paid { color: var(--orange); }

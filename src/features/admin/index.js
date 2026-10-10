@@ -26,7 +26,7 @@ const EVENT_DECISIONS = {
 };
 
 function actionButtons(attribute, id) {
-  return `<div class="pending-actions">
+  return `<div class="queue-actions">
     <button class="btn btn-outline btn-sm" type="button" data-${attribute}="rejected" data-id="${id}">Rechazar</button>
     <button class="btn btn-primary btn-sm" type="button" data-${attribute}="approved" data-id="${id}">Aprobar</button>
   </div>`;
@@ -36,8 +36,8 @@ function projectItem({ id, name, meta }, decision) {
   const actions = decision
     ? `<span class="decision ${decision}">${PROJECT_DECISIONS[decision].label}</span>`
     : actionButtons('project', id);
-  return `<div class="pending-item${decision ? ' done' : ''}">
-    <div class="pending-main"><div class="name">${escapeHtml(name)}</div><div class="meta">${escapeHtml(meta)}</div></div>
+  return `<div class="queue-item${decision ? ' done' : ''}">
+    <div class="queue-main"><div class="queue-name">${escapeHtml(name)}</div><div class="queue-meta">${escapeHtml(meta)}</div></div>
     ${actions}
   </div>`;
 }
@@ -45,9 +45,9 @@ function projectItem({ id, name, meta }, decision) {
 function pendingEventItem(event) {
   const place = getPlace(event.placeId);
   const meta = `${event.ownerName} · ${formatEventDate(event.date)} · ${place ? place.name : event.barrio} · ${formatPrice(event.price)} · cupo ${event.capacity}`;
-  return `<div class="pending-item">
-    <div class="pending-main"><div class="name">${escapeHtml(event.title)}</div><div class="meta">${escapeHtml(meta)}</div></div>
-    <div class="pending-actions">
+  return `<div class="queue-item">
+    <div class="queue-main"><div class="queue-name">${escapeHtml(event.title)}</div><div class="queue-meta">${escapeHtml(meta)}</div></div>
+    <div class="queue-actions">
       <button class="btn btn-outline btn-sm" type="button" data-event="${EVENT_STATUS.REJECTED}" data-id="${event.id}">Rechazar</button>
       <button class="btn btn-primary btn-sm" type="button" data-event="${EVENT_STATUS.APPROVED}" data-id="${event.id}">Publicar</button>
     </div>
@@ -59,7 +59,7 @@ const BAD_AUDIT_TYPES = new Set(['login_fail', 'locked', 'denied']);
 function auditItem({ at, type, email, role, detail }) {
   const when = new Date(at).toLocaleString(LOCALE, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
   const meta = [email, role && ROLE_LABELS[role], detail].filter(Boolean).join(' · ');
-  return `<li>
+  return `<li class="audit-item">
     <div class="audit-head"><span class="audit-type${BAD_AUDIT_TYPES.has(type) ? ' bad' : ''}">${escapeHtml(AUDIT_LABELS[type] ?? type)}</span><span class="audit-time">${when}</span></div>
     ${meta ? `<span class="audit-meta">${escapeHtml(meta)}</span>` : ''}
   </li>`;
@@ -77,19 +77,60 @@ function mount(section) {
     audit: $('#auditLog', section),
     accounts: $('#accountsBadge', section),
     create: $('#createEventBtn', section),
+    more: $('#auditMoreBtn', section),
+    exportAudit: $('#exportAuditBtn', section),
   };
 
+  const AUDIT_PAGE = 5;
+  let showAllAudit = false;
+
+  function auditRows() {
+    return auditStore.getState().entries.slice(0, 40);
+  }
+
   function renderAudit() {
-    const { entries } = auditStore.getState();
-    els.audit.innerHTML = entries.length
-      ? entries.slice(0, 40).map(auditItem).join('')
-      : '<li class="audit-meta">Sin actividad registrada.</li>';
+    const rows = auditRows();
+    const visible = showAllAudit ? rows : rows.slice(0, AUDIT_PAGE);
+    els.audit.innerHTML = visible.length
+      ? visible.map(auditItem).join('')
+      : '<li class="audit-item"><span class="audit-meta">Sin actividad registrada.</span></li>';
     const { accounts } = accountsStore.getState();
     const people = accounts.filter(({ role }) => role === ROLES.CONSUMER).length;
     const orgs = accounts.length - people;
     els.accounts.textContent = `${people} ${people === 1 ? 'persona' : 'personas'} · ${orgs} ${orgs === 1 ? 'organización' : 'organizaciones'}`;
+    if (rows.length > AUDIT_PAGE) {
+      els.more.hidden = false;
+      els.more.textContent = showAllAudit ? 'Ver menos' : `Ver más (${rows.length - AUDIT_PAGE} restantes)`;
+    } else {
+      els.more.hidden = true;
+    }
+  }
+
+  function downloadAuditCsv() {
+    const header = ['Fecha', 'Tipo', 'Correo', 'Rol', 'Detalle'];
+    const body = auditRows().map(({ at, type, email, role, detail }) => ([
+      new Date(at).toLocaleString(LOCALE),
+      AUDIT_LABELS[type] ?? type,
+      email ?? '',
+      (role && ROLE_LABELS[role]) ?? '',
+      detail ?? '',
+    ]));
+    const csv = [header, ...body]
+      .map((row) => row.map((cell) => `"${String(cell).replaceAll('"', '""')}"`).join(','))
+      .join('\n');
+    const url = URL.createObjectURL(new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8' }));
+    const link = Object.assign(document.createElement('a'), { href: url, download: 'registro-actividad-santa-cruz.csv' });
+    link.click();
+    URL.revokeObjectURL(url);
+    showToast('Registro descargado ✓');
   }
   els.create.innerHTML = `${icon('plus', 16)} Crear evento`;
+  els.exportAudit.innerHTML = `${icon('download', 16)} Exportar CSV`;
+  els.more.addEventListener('click', () => {
+    showAllAudit = !showAllAudit;
+    renderAudit();
+  });
+  els.exportAudit.addEventListener('click', downloadAuditCsv);
 
   function render() {
     const content = getContent();
