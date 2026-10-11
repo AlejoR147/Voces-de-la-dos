@@ -6,6 +6,14 @@ import { showToast } from '../../shared/components/toast.js';
 import { bindPasswordToggle } from '../../shared/components/passwordField.js';
 import { icon } from '../../shared/icons.js';
 
+// `onShow`/`onHide` se exportan en el literal `screen`: `mount` solo registra
+// aquí sus manejadores, sin mutar el objeto exportado.
+let handleShow = () => {};
+let handleHide = () => {};
+
+function onShow() { handleShow(); }
+function onHide() { handleHide(); }
+
 function mount(section) {
   section.innerHTML = template;
 
@@ -29,6 +37,7 @@ function mount(section) {
       remaining -= 1;
       if (remaining <= 0) {
         clearInterval(countdown);
+        countdown = null;
         submit.disabled = false;
         showError('');
         return;
@@ -48,30 +57,52 @@ function mount(section) {
 
     submit.disabled = true;
     submit.textContent = 'Verificando…';
-    const result = await login(email, password);
-    submit.textContent = 'Entrar';
-
-    if (result.ok) {
-      form.reset();
-      showError('');
-      submit.disabled = false;
-      showToast('¡Bienvenido de nuevo!');
-      return;
+    let locked = false;
+    try {
+      const result = await login(email, password);
+      if (result.ok) {
+        form.reset();
+        showError('');
+        showToast('¡Bienvenido de nuevo!');
+        return;
+      }
+      form.elements.password.value = '';
+      showError(result.error);
+      if (result.locked) {
+        locked = true;
+        startCountdown(result.locked);
+      }
+    } catch {
+      showError('No pudimos verificar tus datos. Intenta de nuevo.');
+    } finally {
+      submit.textContent = 'Entrar';
+      if (!locked) submit.disabled = false;
     }
-    form.elements.password.value = '';
-    showError(result.error);
-    if (result.locked) startCountdown(result.locked);
-    else submit.disabled = false;
   });
 
-  $('[data-signup]', section).addEventListener('click', () => sessionStorage.setItem('scvd:open-signup', '1'));
+  $('[data-signup]', section)?.addEventListener('click', () => {
+    try {
+      sessionStorage.setItem('scvd:open-signup', '1');
+    } catch {
+      // Almacenamiento bloqueado: se continúa a bienvenida sin apertura automática.
+    }
+  });
 
-  screen.onShow = () => {
+  handleShow = () => {
+    clearInterval(countdown);
+    countdown = null;
+    submit.disabled = false;
+    submit.textContent = 'Entrar';
     showError('');
-    $('#loginEmail', section).focus();
+    $('#loginEmail', section)?.focus();
+  };
+
+  handleHide = () => {
+    clearInterval(countdown);
+    countdown = null;
   };
 }
 
 export const screen = {
-  id: 'acceso', label: 'Iniciar sesión', icon: icon('user'), nav: false, access: 'public', mount,
+  id: 'acceso', label: 'Iniciar sesión', icon: icon('user'), nav: false, access: 'public', mount, onShow, onHide,
 };

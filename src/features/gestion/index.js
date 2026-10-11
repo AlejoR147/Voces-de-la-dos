@@ -12,7 +12,8 @@ import { showToast } from '../../shared/components/toast.js';
 import { icon } from '../../shared/icons.js';
 
 function kpi(value, label, note, ic) {
-  return `<div class="kpi"><div class="kpi-top"><div class="num">${value}</div><span class="kpi-icon" aria-hidden="true">${icon(ic, 20)}</span></div><div class="lbl">${label}</div><div class="delta">${note}</div></div>`;
+  // `value`/`label`/`note` mezclan datos de eventos del gestor: se escapan por convención (`ic` es literal estático).
+  return `<div class="kpi"><div class="kpi-top"><div class="num">${escapeHtml(value)}</div><span class="kpi-icon" aria-hidden="true">${icon(ic, 20)}</span></div><div class="lbl">${escapeHtml(label)}</div><div class="delta">${escapeHtml(note)}</div></div>`;
 }
 
 function summarize(events, content) {

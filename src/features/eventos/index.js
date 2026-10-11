@@ -2,14 +2,19 @@ import template from './eventos.html?raw';
 import { $ } from '../../core/dom.js';
 import { PRICE_FILTERS, ROLES } from '../../config/constants.js';
 import { getPlace } from '../../data/places.js';
+import { NEIGHBORHOODS } from '../../data/neighborhoods.js';
 import { appStore } from '../../state/appStore.js';
 import { contentStore, getContent } from '../../state/contentStore.js';
 import { isPast, publishedEvents } from '../../services/events.js';
 import { matchesPriceFilter, normalizeText } from '../../utils/format.js';
 import { mountChipGroup } from '../../shared/components/chipGroup.js';
 import { bindEnrollment } from '../../shared/components/enrollButton.js';
+import { bindEventDetail } from '../../shared/components/eventDetail.js';
 import { eventCard } from '../../shared/components/eventCard.js';
 import { icon } from '../../shared/icons.js';
+
+const BARRIO_FILTERS = [{ value: 'todos', label: 'Todos' },
+  ...NEIGHBORHOODS.map(({ name }) => ({ value: name, label: name }))];
 
 function mount(section) {
   section.innerHTML = template;
@@ -17,6 +22,7 @@ function mount(section) {
   const list = $('#eventList', section);
   const search = $('#eventSearch', section);
   let priceMode = PRICE_FILTERS[0].value;
+  let barrioMode = 'todos';
 
   $('#eventSearchIcon', section).innerHTML = icon('search', 18);
 
@@ -28,6 +34,7 @@ function mount(section) {
 
     const events = publishedEvents(content)
       .filter(({ price }) => matchesPriceFilter(price, priceMode))
+      .filter((event) => barrioMode === 'todos' || event.barrio === barrioMode)
       .filter((event) => !query || normalizeText(
         `${event.title} ${event.desc} ${event.barrio} ${getPlace(event.placeId)?.name ?? ''}`,
       ).includes(query))
@@ -39,10 +46,17 @@ function mount(section) {
   }
 
   bindEnrollment(list);
+  bindEventDetail(list);
   search.addEventListener('input', render);
   mountChipGroup($('#eventPriceFilter', section), PRICE_FILTERS, {
     onChange: (mode) => {
       priceMode = mode;
+      render();
+    },
+  });
+  mountChipGroup($('#eventBarrioFilter', section), BARRIO_FILTERS, {
+    onChange: (mode) => {
+      barrioMode = mode;
       render();
     },
   });

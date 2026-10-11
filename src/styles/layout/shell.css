@@ -58,10 +58,31 @@
 [data-theme="dark"] .theme-toggle .icon-sun { display: block; }
 [data-theme="dark"] .theme-toggle .icon-moon { display: none; }
 
-.app-main { max-width: 1180px; margin: 0 auto; padding: 32px 24px 72px; }
+.app-main {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 32px 24px 72px;
+  /* Reserva altura mínima para que el crossfade no colapse el layout */
+  min-height: 60vh;
+}
 
 .screen { display: none; }
-.screen.active { display: block; animation: fadeUp .3s ease; }
+.screen.active { display: block; animation: screenIn .32s var(--ease-out); }
+.screen.active.is-entering { animation: screenIn .32s var(--ease-out); }
+
+/* Salida: se mantiene .active + .is-leaving 180ms para fundir sin salto */
+#screens.is-switching .screen.active.is-leaving,
+.screens.is-switching .screen.active.is-leaving {
+  animation: none;
+  opacity: 0;
+  transform: translateY(-6px);
+  transition: opacity .18s ease, transform .18s ease;
+}
+
+@keyframes screenIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: none; }

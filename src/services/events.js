@@ -38,6 +38,26 @@ export function eventStats(event, content) {
   };
 }
 
+/**
+ * IDs de evento conocidos (`event:<id>`) para depurar inscripciones huerfanas.
+ * Se usa en `purgeUserContent`: al borrar eventos de un usuario se filtran las
+ * inscripciones `event:<id>` que ya no existen en `content.events` ni en semillas.
+ */
+export function knownEventIds(content) {
+  return new Set(allEvents(content).map((event) => event.id));
+}
+
+export function pruneOrphanEventEnrollments(enrollments, content) {
+  const known = knownEventIds(content);
+  const cleanList = (list = []) => list.filter((id) => {
+    if (typeof id !== 'string' || !id.startsWith('event:')) return true;
+    return known.has(id.slice('event:'.length));
+  });
+  return Object.fromEntries(
+    Object.entries(enrollments).map(([userId, list]) => [userId, cleanList(list)]),
+  );
+}
+
 export function formatEventDate(iso, options = { day: 'numeric', month: 'short' }) {
   const [year, month, day] = iso.split('-').map(Number);
   return new Date(year, month - 1, day).toLocaleDateString(LOCALE, options).replace('.', '').replace(' de ', ' ');

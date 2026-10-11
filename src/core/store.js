@@ -1,7 +1,29 @@
 import { readJSON, writeJSON } from './storage.js';
 
 export function createStore(initialState, { persistKey } = {}) {
-  let state = persistKey ? { ...initialState, ...readJSON(persistKey, {}) } : initialState;
+  // Descarta claves persistidas con forma inválida (null o tipo distinto al
+  // valor inicial) para que un storage corrupto no rompa lecturas como
+  // `enrollments[userId]` o `accounts.find`.
+  const sanitizePersisted = (persisted) => {
+    if (!persisted || typeof persisted !== 'object') return {};
+    const clean = {};
+    Object.entries(persisted).forEach(([key, value]) => {
+      if (!(key in initialState)) return;
+      const expected = initialState[key];
+      if (Array.isArray(expected)) {
+        if (Array.isArray(value)) clean[key] = value;
+        return;
+      }
+      if (expected !== null && typeof expected === 'object') {
+        if (value !== null && typeof value === 'object' && !Array.isArray(value)) clean[key] = value;
+        return;
+      }
+      clean[key] = value;
+    });
+    return clean;
+  };
+
+  let state = persistKey ? { ...initialState, ...sanitizePersisted(readJSON(persistKey, {})) } : initialState;
   const listeners = new Set();
 
   function getState() {

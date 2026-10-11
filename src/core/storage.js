@@ -1,9 +1,28 @@
 export function readJSON(key, fallback = null) {
   try {
     const raw = localStorage.getItem(key);
-    return raw === null ? fallback : JSON.parse(raw);
+    if (raw === null) return fallback;
+    const parsed = JSON.parse(raw);
+    return parsed === null || parsed === undefined ? fallback : parsed;
   } catch {
     return fallback;
+  }
+}
+
+export function readString(key, fallback = null) {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw === null ? fallback : raw;
+  } catch {
+    return fallback;
+  }
+}
+
+export function writeString(key, value) {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    // Storage may be full or disabled (private mode): the app keeps working in memory.
   }
 }
 

@@ -7,10 +7,11 @@ import {
 import { INTERESTS } from '../../data/interests.js';
 import { NEIGHBORHOODS } from '../../data/neighborhoods.js';
 import { getPlace } from '../../data/places.js';
+import { INITIAL_TEAMS } from '../../data/teams.js';
 import { appStore } from '../../state/appStore.js';
-import { contentStore, getContent } from '../../state/contentStore.js';
+import { contentStore, getContent, toggleTeamMembership } from '../../state/contentStore.js';
 import { changePassword, deleteAccount, updateProfile } from '../../services/auth.js';
-import { allEvents } from '../../services/events.js';
+import { allEvents, formatEventDate } from '../../services/events.js';
 import { bindPasswordToggle } from '../../shared/components/passwordField.js';
 import { showToast } from '../../shared/components/toast.js';
 import { icon } from '../../shared/icons.js';
@@ -21,14 +22,24 @@ const SUBTITLES = {
   [ROLES.ADMIN]: 'Cuenta de administración.',
 };
 
-function enrollmentLabel(id, events) {
+// `onShow` se exporta en el literal `screen`: `mount` solo registra aquí su
+// manejador, sin mutar el objeto exportado.
+let handleShow = () => {};
+
+function onShow() { handleShow(); }
+
+function enrollmentLabel(id, events, suggestions = []) {
   if (id.startsWith('place:')) {
     const place = getPlace(id.slice('place:'.length));
     return place ? { name: place.name, kind: 'Lugar' } : null;
   }
   if (id.startsWith('event:')) {
     const event = events.find((item) => item.id === id.slice('event:'.length));
-    return event ? { name: event.title, kind: 'Evento' } : null;
+    return event ? { name: event.title, kind: 'Evento', detail: formatEventDate(event.date) } : null;
+  }
+  if (id.startsWith('suggestion:')) {
+    const item = suggestions.find((entry) => entry.id === id.slice('suggestion:'.length));
+    return item ? { name: item.title, kind: 'Propuesta' } : null;
   }
   const interestKey = id.startsWith('activity:') ? id.slice('activity:'.length) : null;
   return interestKey && INTERESTS[interestKey]
@@ -40,7 +51,7 @@ const barrioOptions = (selected) => NEIGHBORHOODS
   .map(({ name }) => `<option${name === selected ? ' selected' : ''}>${escapeHtml(name)}</option>`).join('');
 
 const interestChips = (selected) => Object.entries(INTERESTS).map(([key, { emoji, label }]) => (
-  `<button type="button" class="chip${selected.includes(key) ? ' selected' : ''}" data-interest="${key}">${emoji} ${label}</button>`
+  `<button type="button" class="chip${selected.includes(key) ? ' selected' : ''}" data-interest="${escapeHtml(key)}">${escapeHtml(emoji)} ${escapeHtml(label)}</button>`
 )).join('');
 
 function input({ name, label, value = '', type = 'text', maxlength = 80, hint = '', autocomplete = 'off', span = '' }) {
@@ -56,7 +67,7 @@ function consumerForm(user) {
       <input type="range" id="pf-age" name="age" min="12" max="28" value="${Number(user.age)}"></div>
     <div class="field"><label class="field-label" for="pf-barrio">Barrio</label><select id="pf-barrio" name="barrio">${barrioOptions(user.barrio)}</select></div>
     <div class="field"><span class="field-label">Disponibilidad</span>
-      <div class="chip-group" id="pfAvailability">${AVAILABILITY_OPTIONS.map((option) => `<button type="button" class="chip${user.availability.includes(option) ? ' selected' : ''}" data-availability="${option}">${option}</button>`).join('')}</div></div>
+      <div class="chip-group" id="pfAvailability">${AVAILABILITY_OPTIONS.map((option) => `<button type="button" class="chip${user.availability.includes(option) ? ' selected' : ''}" data-availability="${escapeHtml(option)}">${escapeHtml(option)}</button>`).join('')}</div></div>
     <div class="field"><span class="field-label">Intereses</span><div class="chip-group" id="pfInterests">${interestChips(user.interests)}</div></div>`;
 }
 
@@ -64,7 +75,7 @@ function organizationForm(user) {
   return `<div class="form-grid">
       ${input({ name: 'name', label: 'Nombre de la organización', value: user.name, maxlength: 60, autocomplete: 'organization' })}
       <div class="field"><label class="field-label" for="pf-orgType">Tipo de organización</label>
-        <select id="pf-orgType" name="orgType">${ORG_TYPES.map((type) => `<option${type === user.orgType ? ' selected' : ''}>${type}</option>`).join('')}</select></div>
+        <select id="pf-orgType" name="orgType">${ORG_TYPES.map((type) => `<option${type === user.orgType ? ' selected' : ''}>${escapeHtml(type)}</option>`).join('')}</select></div>
       ${input({ name: 'contactName', label: 'Persona responsable', value: user.contactName, maxlength: 60, autocomplete: 'name' })}
       ${input({ name: 'phone', label: 'Teléfono de contacto', value: user.phone, type: 'tel', maxlength: 20, autocomplete: 'tel' })}
       ${input({ name: 'taxId', label: 'NIT o documento', value: user.taxId, maxlength: 20 })}
@@ -159,8 +170,38 @@ function mount(section) {
     main: $('#pfMain', section),
     enrollCard: $('#pfEnrollCard', section),
     enrollments: $('#pfEnrollments', section),
+    teamsCard: $('#pfTeamsCard', section),
+    teams: $('#pfTeams', section),
     security: $('#pfSecurity', section),
   };
+
+  function teamRow(team, joinCount) {
+    // Mismo conteo que Retos: topado en `capacity` para no mostrar sobrecupo.
+    const total = Math.min((team.members?.length ?? 0) + joinCount, team.capacity);
+    return `<div class="team-row">
+      <span class="team-row-icon" aria-hidden="true">${escapeHtml(team.icon ?? '✨')}</span>
+      <div class="team-row-main"><b>${escapeHtml(team.title)}</b><span>${escapeHtml(team.subtitle)} · ${total}/${team.capacity}</span></div>
+      <button class="btn btn-outline btn-sm" type="button" data-leave="${escapeHtml(team.id)}">Salir</button>
+    </div>`;
+  }
+
+  function renderTeams() {
+    const { user } = appStore.getState();
+    const visible = user?.role === ROLES.CONSUMER;
+    els.teamsCard.hidden = !visible;
+    if (!visible) return;
+    const { customTeams, joinedTeams, teamMembers } = getContent();
+    const mine = [...customTeams, ...INITIAL_TEAMS]
+      .filter((team) => joinedTeams.includes(team.id));
+    els.teams.innerHTML = mine.length
+      ? mine.map((team) => teamRow(
+        // No se resetea `members`: se conserva igual que en Retos (semillas con
+        // avatares demostrativos, personalizados con `members: []`).
+        { icon: '✨', members: [], ...team },
+        Object.values(teamMembers).filter((ids) => ids.includes(team.id)).length,
+      )).join('')
+      : `<div class="empty">${icon('flag', 24)}<b>Sin equipos todavía</b><a href="#retos">Ver retos comunitarios</a></div>`;
+  }
 
   function renderEnrollments() {
     const { user } = appStore.getState();
@@ -170,9 +211,9 @@ function mount(section) {
     const content = getContent();
     const events = allEvents(content);
     const items = content.enrolled
-      .map((id) => enrollmentLabel(id, events))
+      .map((id) => enrollmentLabel(id, events, content.suggestions))
       .filter(Boolean)
-      .map(({ name, kind }) => `<div class="enrollment"><b>${escapeHtml(name)}</b><span class="badge">${kind}</span></div>`);
+      .map(({ name, kind, detail }) => `<div class="enrollment"><div class="enrollment-main"><b>${escapeHtml(name)}</b>${detail ? `<small>${escapeHtml(detail)}</small>` : ''}</div><span class="badge">${kind}</span></div>`);
     els.enrollments.innerHTML = items.join('')
       || `<div class="empty">${icon('calendar', 24)}<b>Aún no te has inscrito</b>Explora Para ti, Eventos o el mapa.</div>`;
   }
@@ -207,9 +248,20 @@ function mount(section) {
     els.security.innerHTML = securityHtml(user);
     bindToggles(els.security);
     renderEnrollments();
+    renderTeams();
+  }
+
+  function leaveTeam(button) {
+    try {
+      const joined = toggleTeamMembership(button.dataset.leave);
+      if (!joined) showToast('Saliste del equipo');
+    } catch (error) {
+      showToast(error?.message || 'No se pudo actualizar el equipo');
+    }
   }
 
   delegate(els.main, 'click', '[data-availability], [data-interest]', (_event, chip) => chip.classList.toggle('selected'));
+  delegate(els.teams, 'click', '[data-leave]', (_event, button) => leaveTeam(button));
   els.main.addEventListener('input', (event) => {
     if (event.target.name === 'age') $('#pfAgeValue', els.main).textContent = `${event.target.value} años`;
   });
@@ -274,8 +326,9 @@ function mount(section) {
     if (state.user !== previous.user) render();
   });
   contentStore.subscribe(renderEnrollments);
-  screen.onShow = render;
+  contentStore.subscribe(renderTeams);
+  handleShow = render;
   render();
 }
 
-export const screen = { id: 'perfil', label: 'Perfil', icon: icon('user'), nav: false, access: 'auth', mount };
+export const screen = { id: 'perfil', label: 'Perfil', icon: icon('user'), nav: false, access: 'auth', mount, onShow };

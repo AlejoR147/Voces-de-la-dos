@@ -20,6 +20,12 @@
 
 .event--past { opacity: 0.55; }
 
+.event[data-event-detail] { cursor: pointer; }
+
+.event-detail-lines { display: flex; flex-direction: column; gap: 8px; margin: 4px 0 8px; }
+.event-detail-line { display: flex; gap: 10px; font-size: 13.5px; color: var(--muted); }
+.event-detail-line b { color: var(--ink); font-weight: 600; flex: none; min-width: 52px; }
+
 .event-date {
   display: flex;
   flex-direction: column;

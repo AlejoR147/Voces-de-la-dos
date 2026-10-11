@@ -3,7 +3,7 @@ import { $$, delegate, escapeHtml } from '../../core/dom.js';
 export function mountChipGroup(container, options, { value = options[0]?.value, onChange }) {
   container.classList.add('chip-group');
   container.innerHTML = options
-    .map((option) => `<button type="button" class="chip" data-value="${escapeHtml(option.value)}">${option.label}</button>`)
+    .map((option) => `<button type="button" class="chip" data-value="${escapeHtml(option.value)}">${escapeHtml(option.label)}</button>`)
     .join('');
 
   function select(next) {

@@ -9,10 +9,21 @@
 
   <div class="stats-strip" id="homeStats" aria-label="Tus números"></div>
 
-  <div class="page-grid">
+  <div class="page-grid--sidebar">
     <aside class="profile-panel" id="profileCard" aria-label="Perfil"></aside>
 
     <main class="content-panel">
+      <section class="section" id="homeSoonSection" aria-labelledby="soonTitle" hidden>
+        <header class="section-header">
+          <h2 id="soonTitle" class="section-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+            Se acerca
+          </h2>
+          <a class="link-more" href="#eventos">Ver todos</a>
+        </header>
+        <div class="event-list" id="homeSoon" role="list"></div>
+      </section>
+
       <section class="section" id="homeRecsSection" aria-labelledby="recsTitle">
         <header class="section-header">
           <h2 id="recsTitle" class="section-title">

@@ -11,10 +11,13 @@ import { showToast } from '../../shared/components/toast.js';
 import { icon } from '../../shared/icons.js';
 
 function teamCard(team, { joined, user, joinCount }) {
-  const total = team.members.length + joinCount;
+  const fakes = team.members ?? [];
+  // `fakes` son avatares demostrativos de las semillas; `joinCount` son uniones reales.
+  // Se topa en `capacity` para no mostrar sobrecupo (min(fakes + joins, capacity)).
+  const total = Math.min(fakes.length + joinCount, team.capacity);
   const full = total >= team.capacity && !joined;
   const others = joinCount - (joined ? 1 : 0);
-  const members = team.members.map(({ initial, tone }) => `<div class="a ${tone}">${initial}</div>`).join('')
+  const members = fakes.map(({ initial, tone }) => `<div class="a ${escapeHtml(tone)}">${escapeHtml(initial)}</div>`).join('')
     + (joined ? `<div class="a me" title="Tú">${escapeHtml(initialOf(user.name))}</div>` : '')
     + (others > 0 ? `<div class="a more">+${others}</div>` : '');
   const empty = total === 0
@@ -23,14 +26,16 @@ function teamCard(team, { joined, user, joinCount }) {
 
   let action = '';
   if (user.role === ROLES.CONSUMER) {
+    // `team.id` puede venir de retos creados por usuarios: se escapa por convención.
+    const safeTeamId = escapeHtml(team.id);
     action = joined
-      ? `<button class="btn btn-soft btn-sm" type="button" data-team="${team.id}">${icon('check', 16)} Te uniste · Salir</button>`
-      : `<button class="btn btn-primary btn-sm" type="button" data-team="${team.id}"${full ? ' disabled' : ''}>${full ? 'Equipo completo' : 'Unirme al equipo'}</button>`;
+      ? `<button class="btn btn-soft btn-sm" type="button" data-team="${safeTeamId}">${icon('check', 16)} Te uniste · Salir</button>`
+      : `<button class="btn btn-primary btn-sm" type="button" data-team="${safeTeamId}"${full ? ' disabled' : ''}>${full ? 'Equipo completo' : 'Unirme al equipo'}</button>`;
   }
 
   return `<article class="card card-hover team-card">
     <div class="team-head">
-      <span class="team-icon">${team.icon}</span>
+      <span class="team-icon">${escapeHtml(team.icon)}</span>
       <div class="team-info"><h4>${escapeHtml(team.title)}</h4><div class="team-sub">${escapeHtml(team.subtitle)}</div></div>
     </div>
     ${empty}
@@ -73,8 +78,12 @@ function mount(section) {
   });
 
   delegate(list, 'click', '[data-team]', (_event, button) => {
-    const joined = toggleTeamMembership(button.dataset.team);
-    showToast(joined ? 'Te uniste al equipo. La IA reajustará el reparto de roles.' : 'Saliste del equipo');
+    try {
+      const joined = toggleTeamMembership(button.dataset.team);
+      showToast(joined ? 'Te uniste al equipo. La IA reajustará el reparto de roles.' : 'Saliste del equipo');
+    } catch (error) {
+      showToast(error?.message || 'No se pudo actualizar el equipo');
+    }
   });
   createBtn.addEventListener('click', () => challengeModal.open());
   appStore.subscribe(render);

@@ -1,5 +1,6 @@
 import { escapeHtml } from '../../core/dom.js';
 import { getPlace } from '../../data/places.js';
+import { EVENT_STATUS } from '../../data/events.js';
 import {
   STATUS_LABELS, dateParts, eventEnrollmentId, eventStats, isPast,
 } from '../../services/events.js';
@@ -26,9 +27,9 @@ export function eventCard(event, content, { enroll = false, status = false } = {
   const place = getPlace(event.placeId);
   const where = place ? place.name : event.barrio;
   const isPastEvent = isPast(event);
-  const spots = event.status === 'approved' ? ` ${registered}/${event.capacity} (${occupancy}%)` : ` Cupo ${event.capacity}`;
+  const spots = event.status === EVENT_STATUS.APPROVED ? ` ${registered}/${event.capacity} (${occupancy}%)` : ` Cupo ${event.capacity}`;
 
-  return `<div class="event${isPastEvent ? ' event--past' : ''}" data-event-id="${escapeHtml(event.id)}">
+  return `<div class="event${isPastEvent ? ' event--past' : ''}" role="button" data-event-id="${escapeHtml(event.id)}" data-event-detail="${escapeHtml(event.id)}" tabindex="0">
     <div class="event-date"><b>${day}</b><span>${month}</span></div>
     <div class="event-body">
       <b>${escapeHtml(event.title)}</b>
