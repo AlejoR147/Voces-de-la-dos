@@ -18,7 +18,7 @@ export const SEED_EVENTS = Object.freeze([
     id: 'event-1',
     title: 'Festival de música barrial',
     desc: 'Tarde de bandas y artistas del barrio en tarima abierta.',
-    placeId: 'escenario',
+    placeId: 'it-frontera-placa',
     barrio: 'La Frontera',
     date: inDays(6),
     price: 8000,
@@ -32,8 +32,8 @@ export const SEED_EVENTS = Object.freeze([
     id: 'event-2',
     title: 'Jornada de muralismo',
     desc: 'Pintura colectiva con materiales incluidos y artistas locales.',
-    placeId: 'cancha',
-    barrio: 'La Frontera',
+    placeId: 'it-socorro-parroquia',
+    barrio: 'Villa del Socorro',
     date: inDays(13),
     price: 0,
     capacity: 30,
@@ -42,12 +42,15 @@ export const SEED_EVENTS = Object.freeze([
     ownerName: 'Colectivo Kuma',
     status: EVENT_STATUS.APPROVED,
   },
+  // Semilla demo pasada a proposito: se mantiene APPROVED para ejemplificar el estado
+  // "Finalizado" (isPast) en Impacto `reportRows` y en Gestion/Eventos. No es un evento
+  // rechazado ni un error de fecha; sirve para probar el pasado sin borrar historial.
   {
     id: 'event-3',
     title: 'Concurso de fotografía móvil',
     desc: 'Retrata tu barrio con el celular y compite por materiales.',
-    placeId: 'juvenil',
-    barrio: 'Popular',
+    placeId: 'infra-0207',
+    barrio: 'Villa del Socorro',
     date: inDays(-4),
     price: 0,
     capacity: 50,

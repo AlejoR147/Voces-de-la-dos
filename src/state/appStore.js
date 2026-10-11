@@ -5,6 +5,11 @@ import { ROLES, STORAGE_KEYS } from '../config/constants.js';
 /**
  * Runtime session. It is deliberately NOT persisted as a whole: only a pointer (`userId` + expiry) is stored
  * for regular accounts, and administrator sessions live in memory only.
+ *
+ * Límite sin backend: la integridad total del puntero es imposible (localStorage es editable desde
+ * devtools). `services/auth.js` valida su forma `{ userId: string, expiresAt: number }`, recalcula la
+ * expiración en caliente y cierra la sesión con auditoría ante un puntero inválido/manipulado, pero un
+ * atacante local siempre podrá reescribirlo: esto es defensa en profundidad, no control de acceso real.
  */
 export const appStore = createStore({ user: null, affinities: [] });
 

@@ -7,11 +7,14 @@
   border: 1px solid var(--purple);
 }
 .badge-cyan { background: var(--blue-soft); color: var(--blue); border-color: var(--blue); }
+.badge-blue { background: var(--blue-soft); color: var(--blue); border-color: var(--blue); }
+.badge-magenta { background: var(--purple-soft); color: var(--purple); border-color: var(--purple); }
 .badge-amber { background: var(--orange-soft); color: #C2540F; border-color: var(--orange); }
 .badge-lime { background: var(--green-soft); color: var(--green); border-color: var(--green); }
 .badge-red { background: var(--red-soft); color: var(--red); border-color: var(--red); }
 .badge-neutral { background: var(--bg-secondary); color: var(--muted); border-color: var(--line); }
 
+/* Variantes sólidas reservadas (sin uso actual; se conservan como API para futuros estados). */
 .badge-solid { background: var(--ink); color: var(--card); border-color: var(--ink); }
 .badge-solid-magenta { background: var(--purple); color: #fff; border-color: var(--purple); }
 .badge-solid-cyan { background: var(--blue); color: var(--bg); border-color: var(--blue); }

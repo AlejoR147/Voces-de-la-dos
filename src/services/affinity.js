@@ -27,6 +27,6 @@ export function affinityScore(affinities, key) {
 }
 
 export function profileTitle(affinities) {
-  const top = affinities[0];
-  return top ? INTERESTS[top.key].profile : 'Explorador';
+  const top = affinities?.[0];
+  return top?.key && INTERESTS[top.key] ? INTERESTS[top.key].profile : 'Explorador';
 }

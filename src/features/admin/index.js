@@ -3,11 +3,13 @@ import template from './admin.html?raw';
 import { $, delegate, escapeHtml } from '../../core/dom.js';
 import { LOCALE, ROLES, ROLE_LABELS } from '../../config/constants.js';
 import { accountsStore } from '../../state/accountsStore.js';
-import { AUDIT_LABELS, auditStore } from '../../services/audit.js';
+import { appStore } from '../../state/appStore.js';
+import { AUDIT_LABELS, auditStore, maskEmail } from '../../services/audit.js';
 import { PENDING_PROJECTS } from '../../data/admin.js';
 import { EVENT_STATUS } from '../../data/events.js';
+import { INTERESTS } from '../../data/interests.js';
 import { getPlace } from '../../data/places.js';
-import { contentStore, getContent, createEvent, decideProject, setEventStatus } from '../../state/contentStore.js';
+import { contentStore, getContent, createEvent, decideProject, decideSuggestion, setEventStatus } from '../../state/contentStore.js';
 import { allEvents, formatEventDate } from '../../services/events.js';
 import { formatPrice } from '../../utils/format.js';
 import { createEventModal } from '../../shared/components/eventModal.js';
@@ -25,10 +27,27 @@ const EVENT_DECISIONS = {
   [EVENT_STATUS.REJECTED]: 'Evento rechazado. El gestor verá el nuevo estado.',
 };
 
+const SUGGESTION_DECISIONS = {
+  [EVENT_STATUS.APPROVED]: 'Propuesta aprobada ✓ — ya es visible para todos',
+  [EVENT_STATUS.REJECTED]: 'Propuesta rechazada. El autor verá el nuevo estado.',
+};
+
+function suggestionItem(item) {
+  const category = INTERESTS[item.interestKey] ? `${INTERESTS[item.interestKey].emoji} ${INTERESTS[item.interestKey].label}` : item.interestKey;
+  return `<div class="queue-item">
+    <div class="queue-main"><div class="queue-name">${escapeHtml(item.title)}</div><div class="queue-meta">${escapeHtml(item.authorName)} · ${escapeHtml(category)} · ${escapeHtml(item.barrio)}</div><div class="queue-desc">${escapeHtml(item.desc)}</div></div>
+    <div class="queue-actions">
+      <button class="btn btn-outline btn-sm" type="button" data-suggestion="${EVENT_STATUS.REJECTED}" data-id="${escapeHtml(item.id)}">Rechazar</button>
+      <button class="btn btn-primary btn-sm" type="button" data-suggestion="${EVENT_STATUS.APPROVED}" data-id="${escapeHtml(item.id)}">Aprobar</button>
+    </div>
+  </div>`;
+}
+
 function actionButtons(attribute, id) {
+  // `attribute` es siempre un literal estático ('project'); `id` puede ser contenido local: se escapa.
   return `<div class="queue-actions">
-    <button class="btn btn-outline btn-sm" type="button" data-${attribute}="rejected" data-id="${id}">Rechazar</button>
-    <button class="btn btn-primary btn-sm" type="button" data-${attribute}="approved" data-id="${id}">Aprobar</button>
+    <button class="btn btn-outline btn-sm" type="button" data-${attribute}="rejected" data-id="${escapeHtml(id)}">Rechazar</button>
+    <button class="btn btn-primary btn-sm" type="button" data-${attribute}="approved" data-id="${escapeHtml(id)}">Aprobar</button>
   </div>`;
 }
 
@@ -48,8 +67,8 @@ function pendingEventItem(event) {
   return `<div class="queue-item">
     <div class="queue-main"><div class="queue-name">${escapeHtml(event.title)}</div><div class="queue-meta">${escapeHtml(meta)}</div></div>
     <div class="queue-actions">
-      <button class="btn btn-outline btn-sm" type="button" data-event="${EVENT_STATUS.REJECTED}" data-id="${event.id}">Rechazar</button>
-      <button class="btn btn-primary btn-sm" type="button" data-event="${EVENT_STATUS.APPROVED}" data-id="${event.id}">Publicar</button>
+      <button class="btn btn-outline btn-sm" type="button" data-event="${EVENT_STATUS.REJECTED}" data-id="${escapeHtml(event.id)}">Rechazar</button>
+      <button class="btn btn-primary btn-sm" type="button" data-event="${EVENT_STATUS.APPROVED}" data-id="${escapeHtml(event.id)}">Publicar</button>
     </div>
   </div>`;
 }
@@ -58,7 +77,8 @@ const BAD_AUDIT_TYPES = new Set(['login_fail', 'locked', 'denied']);
 
 function auditItem({ at, type, email, role, detail }) {
   const when = new Date(at).toLocaleString(LOCALE, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
-  const meta = [email, role && ROLE_LABELS[role], detail].filter(Boolean).join(' · ');
+  // PII minimizada: el correo se muestra mascarado (`a***@dominio`), nunca completo.
+  const meta = [maskEmail(email), role && ROLE_LABELS[role], detail].filter(Boolean).join(' · ');
   return `<li class="audit-item">
     <div class="audit-head"><span class="audit-type${BAD_AUDIT_TYPES.has(type) ? ' bad' : ''}">${escapeHtml(AUDIT_LABELS[type] ?? type)}</span><span class="audit-time">${when}</span></div>
     ${meta ? `<span class="audit-meta">${escapeHtml(meta)}</span>` : ''}
@@ -71,6 +91,8 @@ function mount(section) {
   const els = {
     pendingEvents: $('#pendingEvents', section),
     pendingEventsBadge: $('#pendingEventsBadge', section),
+    suggestions: $('#suggestList', section),
+    suggestBadge: $('#suggestBadge', section),
     projects: $('#pendingList', section),
     approvedBadge: $('#approvedBadge', section),
     allEvents: $('#allEvents', section),
@@ -84,11 +106,32 @@ function mount(section) {
   const AUDIT_PAGE = 5;
   let showAllAudit = false;
 
+  // Misma guarda que inicio/explorar/eventos/retos/gestion/perfil: sin sesión de admin
+  // no se pinta nada sensible (moderación, conteos, auditoría con PII).
+  const isAdminSession = () => appStore.getState().user?.role === ROLES.ADMIN;
+
+  function clearSensitive() {
+    els.pendingEvents.innerHTML = '';
+    els.pendingEventsBadge.textContent = '';
+    els.suggestions.innerHTML = '';
+    els.suggestBadge.textContent = '';
+    els.projects.innerHTML = '';
+    els.approvedBadge.textContent = '';
+    els.allEvents.innerHTML = '';
+    els.audit.innerHTML = '';
+    els.accounts.textContent = '';
+  }
+
   function auditRows() {
     return auditStore.getState().entries.slice(0, 40);
   }
 
   function renderAudit() {
+    if (!isAdminSession()) {
+      els.audit.innerHTML = '';
+      els.accounts.textContent = '';
+      return;
+    }
     const rows = auditRows();
     const visible = showAllAudit ? rows : rows.slice(0, AUDIT_PAGE);
     els.audit.innerHTML = visible.length
@@ -111,7 +154,7 @@ function mount(section) {
     const body = auditRows().map(({ at, type, email, role, detail }) => ([
       new Date(at).toLocaleString(LOCALE),
       AUDIT_LABELS[type] ?? type,
-      email ?? '',
+      maskEmail(email ?? ''),
       (role && ROLE_LABELS[role]) ?? '',
       detail ?? '',
     ]));
@@ -133,6 +176,10 @@ function mount(section) {
   els.exportAudit.addEventListener('click', downloadAuditCsv);
 
   function render() {
+    if (!isAdminSession()) {
+      clearSensitive();
+      return;
+    }
     const content = getContent();
     const events = allEvents(content);
     const pending = events.filter(({ status }) => status === EVENT_STATUS.PENDING);
@@ -142,8 +189,17 @@ function mount(section) {
       ? pending.map(pendingEventItem).join('')
       : `<div class="empty">${icon('check', 24)}<b>Todo al día</b>No hay eventos esperando revisión.</div>`;
 
+    const suggestions = content.suggestions.filter(({ status }) => status === EVENT_STATUS.PENDING);
+    els.suggestBadge.textContent = `${suggestions.length} ${suggestions.length === 1 ? 'por revisar' : 'por revisar'}`;
+    els.suggestions.innerHTML = suggestions.length
+      ? suggestions.map(suggestionItem).join('')
+      : `<div class="empty">${icon('sparkles', 24)}<b>Sin propuestas pendientes</b>Cuando alguien proponga actividades aparecerán aquí.</div>`;
+
     els.projects.innerHTML = PENDING_PROJECTS.map((project) => projectItem(project, content.decisions[project.id])).join('');
-    const approved = Object.values(content.decisions).filter((value) => value === 'approved').length;
+    // Solo cuentan decisiones sobre ids existentes (ignora huerfanas de storage viejo).
+    const knownIds = new Set(PENDING_PROJECTS.map((project) => project.id));
+    const approved = Object.entries(content.decisions)
+      .filter(([id, value]) => value === 'approved' && knownIds.has(id)).length;
     els.approvedBadge.textContent = `${approved} ${approved === 1 ? 'aprobado' : 'aprobados'}`;
 
     els.allEvents.innerHTML = [...events]
@@ -161,14 +217,32 @@ function mount(section) {
   });
 
   delegate(els.pendingEvents, 'click', '[data-event]', (_event, button) => {
-    setEventStatus(button.dataset.id, button.dataset.event);
-    showToast(EVENT_DECISIONS[button.dataset.event]);
+    try {
+      setEventStatus(button.dataset.id, button.dataset.event);
+      showToast(EVENT_DECISIONS[button.dataset.event] ?? 'Decisión guardada');
+    } catch (error) {
+      showToast(error?.message || 'No se pudo guardar la decisión');
+    }
+  });
+  delegate(els.suggestions, 'click', '[data-suggestion]', (_event, button) => {
+    try {
+      decideSuggestion(button.dataset.id, button.dataset.suggestion);
+      showToast(SUGGESTION_DECISIONS[button.dataset.suggestion] ?? 'Decisión guardada');
+    } catch (error) {
+      showToast(error?.message || 'No se pudo guardar la decisión');
+    }
   });
   delegate(els.projects, 'click', '[data-project]', (_event, button) => {
-    decideProject(button.dataset.id, button.dataset.project);
-    showToast(PROJECT_DECISIONS[button.dataset.project].toast);
+    try {
+      decideProject(button.dataset.id, button.dataset.project);
+      showToast(PROJECT_DECISIONS[button.dataset.project].toast);
+    } catch (error) {
+      showToast(error?.message || 'No se pudo guardar la decisión');
+    }
   });
   els.create.addEventListener('click', () => eventModal.open());
+  // Al cerrar sesión (o cambiar de rol) se limpia lo pintado: el DOM de la pantalla persiste.
+  appStore.subscribe(() => { render(); renderAudit(); });
   contentStore.subscribe(render);
   auditStore.subscribe(renderAudit);
   render();

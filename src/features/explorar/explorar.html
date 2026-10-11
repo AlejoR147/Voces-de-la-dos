@@ -8,9 +8,26 @@
 <div class="toolbar">
   <label class="search">
     <span class="search-icon" id="exploreSearchIcon"></span>
-    <input class="search-input" id="exploreSearch" type="search" placeholder="Buscar talleres, eventos, intereses…" autocomplete="off">
+    <input class="search-input" id="exploreSearch" type="search" aria-label="Buscar talleres, eventos, intereses" placeholder="Buscar talleres, eventos, intereses…" autocomplete="off">
   </label>
   <div id="explorePriceFilter"></div>
+  <div id="exploreInterestFilter"></div>
+  <button class="btn btn-primary btn-sm" type="button" id="suggestBtn"></button>
 </div>
 
 <div class="grid grid-cards" id="exploreGrid"></div>
+
+<section class="section" id="communitySection" hidden>
+  <div class="section-head">
+    <h2 class="section-title">Propuestas de la comunidad</h2>
+  </div>
+  <div class="grid grid-cards" id="communityGrid"></div>
+</section>
+
+<section class="section" id="mySuggestionsSection">
+  <div class="section-head">
+    <h2 class="section-title">Mis propuestas</h2>
+    <span class="badge" id="mySugBadge"></span>
+  </div>
+  <div class="stack" id="suggestList"></div>
+</section>

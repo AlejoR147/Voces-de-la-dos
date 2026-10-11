@@ -14,8 +14,17 @@ import { getContent } from '../../state/contentStore.js';
 import { publishedEvents, isPast } from '../../services/events.js';
 import { eventCard } from '../../shared/components/eventCard.js';
 import { bindEnrollment } from '../../shared/components/enrollButton.js';
+import { bindEventDetail } from '../../shared/components/eventDetail.js';
 
 const STEP_COUNT = 4;
+
+// `onShow`/`onHide` se exportan en el literal `screen`: `mount` solo registra
+// aquí sus manejadores, sin mutar el objeto exportado.
+let handleShow = () => {};
+let handleHide = () => {};
+
+function onShow() { handleShow(); }
+function onHide() { handleHide(); }
 
 const initialDraft = () => ({
   role: ROLES.CONSUMER,
@@ -68,9 +77,10 @@ function stepBody(step, draft) {
   const org = isOrg(draft);
 
   if (step === 0) {
+    // Opciones de rol estáticas (`constants.js`): se escapan igual por convención.
     return `<div class="role-options">${ACCOUNT_TYPE_OPTIONS.map(({ value, icon: emoji, title, desc }) => `
-      <button type="button" class="role-option${draft.role === value ? ' active' : ''}" data-role="${value}">
-        <span class="role-icon">${emoji}</span><b>${title}</b><span>${desc}</span>
+      <button type="button" class="role-option${draft.role === value ? ' active' : ''}" data-role="${escapeHtml(value)}">
+        <span class="role-icon">${escapeHtml(emoji)}</span><b>${escapeHtml(title)}</b><span>${escapeHtml(desc)}</span>
       </button>`).join('')}</div>`;
   }
 
@@ -86,7 +96,7 @@ function stepBody(step, draft) {
   if (step === 2 && org) {
     return `<div class="form-grid">
       <div class="field"><label class="field-label" for="wz-orgType">Tipo de organización</label>
-        <select id="wz-orgType" data-field="orgType">${ORG_TYPES.map((type) => `<option${type === draft.orgType ? ' selected' : ''}>${type}</option>`).join('')}</select></div>
+        <select id="wz-orgType" data-field="orgType">${ORG_TYPES.map((type) => `<option${type === draft.orgType ? ' selected' : ''}>${escapeHtml(type)}</option>`).join('')}</select></div>
       ${barrioSelect(draft)}
       ${textField({ field: 'contactName', label: 'Persona responsable', value: draft.contactName, autocomplete: 'name', maxlength: 60 })}
       ${textField({ field: 'phone', label: 'Teléfono de contacto', value: draft.phone, type: 'tel', autocomplete: 'tel', maxlength: 20, hint: 'Opcional' })}
@@ -102,11 +112,11 @@ function stepBody(step, draft) {
         <input type="range" id="wz-age" data-field="age" min="12" max="28" value="${draft.age}"></div>
       ${barrioSelect(draft)}
       <div class="field"><span class="field-label">Disponibilidad</span>
-        <div class="chip-group">${AVAILABILITY_OPTIONS.map((option) => `<button type="button" class="chip${draft.availability.includes(option) ? ' selected' : ''}" data-availability="${option}">${option}</button>`).join('')}</div></div>`;
+        <div class="chip-group">${AVAILABILITY_OPTIONS.map((option) => `<button type="button" class="chip${draft.availability.includes(option) ? ' selected' : ''}" data-availability="${escapeHtml(option)}">${escapeHtml(option)}</button>`).join('')}</div></div>`;
   }
 
   return `<div class="chip-group">${Object.entries(INTERESTS).map(([key, { emoji, label }]) => (
-    `<button type="button" class="chip${draft.interests.includes(key) ? ' selected' : ''}" data-interest="${key}">${emoji} ${label}</button>`
+    `<button type="button" class="chip${draft.interests.includes(key) ? ' selected' : ''}" data-interest="${escapeHtml(key)}">${escapeHtml(emoji)} ${escapeHtml(label)}</button>`
   )).join('')}</div>`;
 }
 
@@ -233,20 +243,26 @@ function mount(section) {
 
     busy = true;
     render();
-    const result = await registerAccount({
-      email: draft.email,
-      password: draft.password,
-      role: draft.role,
-      profile: buildProfile(draft),
-    });
-    busy = false;
-    if (!result.ok) {
-      step = 1;
-      setError(result.error, result.field);
-      return;
+    try {
+      const result = await registerAccount({
+        email: draft.email,
+        password: draft.password,
+        role: draft.role,
+        profile: buildProfile(draft),
+      });
+      if (!result.ok) {
+        step = 1;
+        setError(result.error, result.field);
+        return;
+      }
+      showToast(`¡Bienvenido, ${draft.name.trim()}!`);
+      close();
+    } catch {
+      setError('No pudimos crear tu cuenta. Intenta de nuevo.');
+    } finally {
+      busy = false;
+      render();
     }
-    showToast(`¡Bienvenido, ${draft.name.trim()}!`);
-    close();
   }
 
   function back() {
@@ -293,7 +309,9 @@ function mount(section) {
   });
 
   // === STATS COUNTERS ===
-  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+  let reduceMotion = motionQuery.matches;
+  motionQuery.addEventListener('change', (event) => { reduceMotion = event.matches; });
   let countersAnimated = false;
 
   function animateCounters() {
@@ -343,9 +361,12 @@ function mount(section) {
       ? upcoming.map((event) => eventCard(event, content, { enroll: false })).join('')
       : '<p class="empty-events">No hay eventos próximos. ¡Vuelve pronto!</p>';
     bindEnrollment(eventsList);
+    bindEventDetail(eventsList);
   }
 
   // === INFINITE AUTO CAROUSEL (rAF, deterministic) ===
+  let restartCarousel = () => {};
+  let haltCarousel = () => {};
   function initCarousel() {
     const root = $('[data-carousel]', section);
     if (!root || root.dataset.ready) return;
@@ -364,31 +385,43 @@ function mount(section) {
     let offset = 0;
     let last = 0;
     let hold = false;
-    let inView = true;
+    // Empieza fuera de vista: el observer confirma la visibilidad real.
+    // Con `true` el track avanzaba oculto bajo `content-visibility:auto`,
+    // donde `scrollWidth` puede ser 0 y el módulo envenenaba `offset` con NaN.
+    let inView = false;
     let resumeTimer = 0;
+    let raf = 0;
 
     function halfWidth() { return track.scrollWidth / 2; }
 
     function normalize() {
+      if (!Number.isFinite(offset)) offset = 0;
       const half = halfWidth();
-      if (half > 0) {
-        offset %= half;
-        if (offset > 0) offset -= half;
-      }
+      // Sin medida (sección oculta o contenido omitido por
+      // `content-visibility`): no modula para no producir NaN.
+      if (!(half > 0)) return false;
+      offset %= half;
+      if (offset > 0) offset -= half;
+      return true;
     }
 
     function paint() { track.style.transform = `translateX(${offset}px)`; }
 
     function tick(now) {
+      if (!section.classList.contains('active') || document.hidden) {
+        last = now;
+        raf = requestAnimationFrame(tick);
+        return;
+      }
       if (!last) last = now;
       const delta = Math.min((now - last) / 1000, 0.05);
       last = now;
-      if (!reduceMotion && inView && !hold) {
+      if (!reduceMotion && inView && !hold && halfWidth() > 0) {
         offset -= SPEED * delta;
         normalize();
         paint();
       }
-      requestAnimationFrame(tick);
+      raf = requestAnimationFrame(tick);
     }
 
     function pause(ms = 0) {
@@ -399,10 +432,11 @@ function mount(section) {
 
     function nudge(direction) {
       const first = track.querySelector('.carousel-slide');
-      const step = first ? first.getBoundingClientRect().width + 10 : 300;
+      const width = first ? first.getBoundingClientRect().width : 0;
+      const step = width > 0 ? width + 10 : 300;
+      if (!Number.isFinite(offset)) offset = 0;
       offset += direction * step;
-      normalize();
-      paint();
+      if (normalize()) paint();
       pause(6000);
     }
 
@@ -416,10 +450,35 @@ function mount(section) {
     root.addEventListener('touchend', () => { hold = false; }, { passive: true });
 
     new IntersectionObserver((entries) => {
-      entries.forEach((entry) => { inView = entry.isIntersecting; });
-    }, { threshold: 0.05 }).observe(root);
+      entries.forEach((entry) => {
+        inView = entry.isIntersecting;
+        // Al entrar, repara el desplazamiento si el layout ya es medible
+        // (p. ej. tras imágenes diferidas o `content-visibility`).
+        if (inView && halfWidth() > 0) {
+          normalize();
+          paint();
+        }
+      });
+    }, { threshold: 0.05, rootMargin: '200px 0px' }).observe(root);
 
-    requestAnimationFrame(tick);
+    raf = requestAnimationFrame(tick);
+    restartCarousel = () => {
+      last = 0;
+      // Repara un `offset` envenenado (NaN) de sesiones anteriores y
+      // reanuda el rAF pausado por `onHide`. Si el rAF ya giraba (inactivo
+      // mientras la sección estaba oculta), basta con resetear `last`.
+      if (halfWidth() > 0) {
+        normalize();
+        paint();
+      }
+      if (!raf) {
+        raf = requestAnimationFrame(tick);
+      }
+    };
+    haltCarousel = () => {
+      cancelAnimationFrame(raf);
+      raf = 0;
+    };
   }
 
   // === SCROLL REVEALS ===
@@ -446,9 +505,10 @@ function mount(section) {
   revealTargets.forEach((el) => revealObserver.observe(el));
 
   // Fallback final: si el observer fallara, el scroll revela igual.
+  // No hace nada cuando la pantalla no está activa.
   let scrollQueued = false;
   window.addEventListener('scroll', () => {
-    if (scrollQueued || landing.hidden) return;
+    if (scrollQueued || landing.hidden || !section.classList.contains('active')) return;
     scrollQueued = true;
     requestAnimationFrame(() => {
       scrollQueued = false;
@@ -457,16 +517,27 @@ function mount(section) {
     });
   }, { passive: true });
 
-  screen.onShow = () => {
-    if (location.hash === '#bienvenida' && sessionStorage.getItem('scvd:open-signup')) {
-      sessionStorage.removeItem('scvd:open-signup');
+  handleShow = () => {
+    let openSignup = false;
+    try {
+      openSignup = sessionStorage.getItem('scvd:open-signup') === '1';
+      if (openSignup) sessionStorage.removeItem('scvd:open-signup');
+    } catch {
+      openSignup = false;
+    }
+    if (location.hash.replace(/^#\/?/, '') === 'bienvenida' && openSignup) {
       open();
     }
+    restartCarousel();
     renderEvents();
     if (section.offsetParent !== null && !landing.hidden) {
       requestAnimationFrame(animateCounters);
       requestAnimationFrame(revealVisible);
     }
+  };
+
+  handleHide = () => {
+    haltCarousel();
   };
 
   renderEvents();
@@ -481,4 +552,6 @@ export const screen = {
   nav: false,
   access: 'public',
   mount,
+  onShow,
+  onHide,
 };

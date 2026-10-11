@@ -5,7 +5,7 @@ import template from './mapa.html?raw';
 import { $, escapeHtml } from '../../core/dom.js';
 import { MAP_CONFIG, PRICE_FILTERS } from '../../config/constants.js';
 import { PLACES, PLACE_CATEGORIES, getPlace } from '../../data/places.js';
-import { isConsumer } from '../../state/appStore.js';
+import { appStore, isConsumer } from '../../state/appStore.js';
 import { contentStore, getContent } from '../../state/contentStore.js';
 import {
   distanceMeters, formatDistance, getCurrentPosition, googleMapsDirectionsUrl,
@@ -23,16 +23,23 @@ const REFERENCE = { lat: MAP_CONFIG.center[0], lng: MAP_CONFIG.center[1], label:
 const MAX_DISTANCE_FROM_COMMUNE_M = 20000;
 const MAP_BOUNDS = L.latLngBounds([6.2, -75.66], [6.4, -75.45]);
 
+// `onShow` se exporta en el literal `screen`: `mount` solo registra aquí su
+// manejador, sin mutar el objeto exportado.
+let handleShow = () => {};
+
+function onShow() { handleShow(); }
+
 const CATEGORY_OPTIONS = [
   { value: 'todas', label: 'Todas' },
   ...Object.entries(PLACE_CATEGORIES).map(([value, { icon: emoji, label }]) => ({ value, label: `${emoji} ${label}` })),
 ];
 
 const pinIcon = (place, selected) => {
+  // Tono e icono vienen de `PLACE_CATEGORIES` (estático): se escapan igual por convención.
   const { tone, icon: emoji } = PLACE_CATEGORIES[place.category];
   return L.divIcon({
     className: 'map-marker',
-    html: `<div class="pin pin--${tone}${selected ? ' is-selected' : ''}"><span>${emoji}</span></div>`,
+    html: `<div class="pin pin--${escapeHtml(tone)}${selected ? ' is-selected' : ''}"><span>${escapeHtml(emoji)}</span></div>`,
     iconSize: [40, 48],
     iconAnchor: [20, 42],
   });
@@ -48,8 +55,8 @@ const originIcon = (live) => L.divIcon({
 function placeItemHtml(place, origin, active) {
   const { tone, icon: emoji } = PLACE_CATEGORIES[place.category];
   const distance = formatDistance(distanceMeters(origin, place));
-  return `<button type="button" class="place-item${active ? ' active' : ''}" data-place="${place.id}">
-    <span class="place-item-icon place-item-icon--${tone}">${emoji}</span>
+  return `<button type="button" class="place-item${active ? ' active' : ''}" data-place="${escapeHtml(place.id)}">
+    <span class="place-item-icon place-item-icon--${escapeHtml(tone)}">${escapeHtml(emoji)}</span>
     <span class="place-item-body"><b>${escapeHtml(place.name)}</b><span>${escapeHtml(place.barrio)} · a ${distance}</span></span>
     ${priceBadge(place.price)}
   </button>`;
@@ -106,6 +113,8 @@ function mount(section) {
     selectedId: null,
     route: null,
     routing: false,
+    routeRequestId: 0,
+    pendingRefit: false,
     category: CATEGORY_OPTIONS[0].value,
     price: PRICE_FILTERS[0].value,
   };
@@ -163,6 +172,15 @@ function mount(section) {
   }
 
   function refresh() {
+    // Sin sesión no se pinta nada (conteos, inscripciones, próximos eventos):
+    // el DOM persiste tras el logout y el router ya no muestra esta pantalla.
+    if (!appStore.getState().user) {
+      els.count.textContent = '';
+      els.list.innerHTML = '';
+      els.detail.hidden = true;
+      els.detail.innerHTML = '';
+      return;
+    }
     if (state.selectedId && !visiblePlaces().some(({ id }) => id === state.selectedId)) {
       state.selectedId = null;
       clearRoute();
@@ -175,6 +193,7 @@ function mount(section) {
   function select(id) {
     const place = getPlace(id);
     if (!place) return;
+    state.routeRequestId += 1;
     state.selectedId = id;
     clearRoute();
     refresh();
@@ -182,9 +201,19 @@ function mount(section) {
   }
 
   function clearSelection() {
+    state.routeRequestId += 1;
     state.selectedId = null;
     clearRoute();
     refresh();
+  }
+
+  function fitRoute() {
+    if (!state.map || !state.route || !Array.isArray(state.route.points) || state.route.points.length === 0) return;
+    state.map.fitBounds(L.latLngBounds(state.route.points), {
+      paddingTopLeft: [70, 70],
+      paddingBottomRight: [70, els.detail.offsetHeight + 50],
+      maxZoom: 17,
+    });
   }
 
   async function toggleRoute() {
@@ -198,8 +227,13 @@ function mount(section) {
     }
 
     state.routing = true;
+    const requestId = ++state.routeRequestId;
     renderDetail();
     const route = await getWalkingRoute(state.origin, place);
+    if (requestId !== state.routeRequestId) {
+      state.routing = false;
+      return;
+    }
     state.routing = false;
     if (state.selectedId !== place.id) return;
 
@@ -210,17 +244,20 @@ function mount(section) {
       dashArray: route.approximate ? '4 10' : null,
     });
     state.routeLayer.addLayer(line);
-    state.map.fitBounds(line.getBounds(), {
-      paddingTopLeft: [70, 70],
-      paddingBottomRight: [70, els.detail.offsetHeight + 50],
-      maxZoom: 17,
-    });
+    if (!section.classList.contains('active')) {
+      state.pendingRefit = true;
+      renderDetail();
+      return;
+    }
+    state.pendingRefit = false;
+    fitRoute();
     renderDetail();
     if (route.approximate) showToast('Sin conexión al servicio de rutas: mostramos una línea aproximada');
   }
 
   function setOrigin(origin) {
     state.origin = origin;
+    state.routeRequestId += 1;
     state.originMarker.setLatLng([origin.lat, origin.lng]);
     state.originMarker.setIcon(originIcon(origin.live));
     state.originMarker.setTooltipContent(origin.live ? 'Tu ubicación' : origin.label);
@@ -241,6 +278,7 @@ function mount(section) {
       state.map.flyTo([position.lat, position.lng], 16, { duration: 0.6 });
       showToast('Ubicación actualizada');
     } catch {
+      setOrigin(REFERENCE);
       showToast('No pudimos obtener tu ubicación. Usamos un punto de referencia en Santa Cruz');
     } finally {
       els.locate.classList.remove('loading');
@@ -264,9 +302,10 @@ function mount(section) {
 
     state.routeLayer = L.layerGroup().addTo(state.map);
     state.markerLayer = L.layerGroup().addTo(state.map);
-    state.originMarker = L.marker([REFERENCE.lat, REFERENCE.lng], { icon: originIcon(false), interactive: true, keyboard: false })
+    state.originMarker = L.marker([REFERENCE.lat, REFERENCE.lng], { icon: originIcon(false), interactive: true, keyboard: false, bubblingMouseEvents: false })
       .bindTooltip(REFERENCE.label, { direction: 'top', offset: [0, -8] })
       .addTo(state.map);
+    state.originMarker.on('click', (event) => L.DomEvent.stopPropagation(event));
 
     PLACES.forEach((place) => {
       const marker = L.marker([place.lat, place.lng], { icon: pinIcon(place, false), title: place.name })
@@ -283,6 +322,10 @@ function mount(section) {
   function activate() {
     if (!state.map) createMap();
     requestAnimationFrame(() => state.map.invalidateSize());
+    if (state.route && state.pendingRefit && state.selectedId) {
+      state.pendingRefit = false;
+      requestAnimationFrame(fitRoute);
+    }
     renderDetail();
   }
 
@@ -314,9 +357,11 @@ function mount(section) {
     },
   });
   contentStore.subscribe(() => state.selectedId && renderDetail());
+  // Limpia lugares/detalle al cerrar sesión.
+  appStore.subscribe(refresh);
 
-  screen.onShow = activate;
+  handleShow = activate;
   refreshList();
 }
 
-export const screen = { id: 'mapa', label: 'Mapa', icon: icon('map'), nav: true, access: 'auth', mount };
+export const screen = { id: 'mapa', label: 'Mapa', icon: icon('map'), nav: true, access: 'auth', mount, onShow };

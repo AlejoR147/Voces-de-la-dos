@@ -39,7 +39,13 @@ export function bootstrap() {
     section.id = `screen-${id}`;
     section.dataset.screen = id;
     screens.appendChild(section);
-    mount(section);
+    try {
+      mount(section);
+    } catch (error) {
+      console.error(`No se pudo montar la pantalla "${id}"`, error);
+      section.innerHTML = '<div class="card"><h2>Algo salió mal</h2><p>No pudimos cargar esta sección. Prueba recargando la página.</p></div>';
+      showToast(`No pudimos cargar la sección ${id}`);
+    }
   });
 
   mountHeaderControls();

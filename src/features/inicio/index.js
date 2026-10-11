@@ -9,11 +9,13 @@ import { ROLES, ROLE_LABELS } from '../../config/constants.js';
 import { profileTitle } from '../../services/affinity.js';
 import { buildRecommendations } from '../../services/recommendations.js';
 import {
-  allEvents, eventStats, eventsOwnedBy, isPast, publishedEvents,
+  allEvents, eventEnrollmentId, eventStats, eventsOwnedBy, isPast, publishedEvents,
 } from '../../services/events.js';
+import { toISODate } from '../../data/events.js';
 import { formatNumber, initialOf } from '../../utils/format.js';
 import { activityCard } from '../../shared/components/activityCard.js';
 import { bindEnrollment } from '../../shared/components/enrollButton.js';
+import { bindEventDetail } from '../../shared/components/eventDetail.js';
 import { eventCard } from '../../shared/components/eventCard.js';
 import { icon } from '../../shared/icons.js';
 
@@ -22,7 +24,10 @@ const TOP_RECOMMENDATIONS = 3;
 const TOP_EVENTS = 4;
 
 function organizationCardHtml(user) {
-  const categories = user.interests.map((key) => `<span class="badge">${INTERESTS[key].emoji} ${INTERESTS[key].label}</span>`).join('');
+  const categories = user.interests.map((key) => {
+    const info = INTERESTS[key] ?? { emoji: '✨', label: 'Exploración' };
+    return `<span class="badge">${escapeHtml(info.emoji)} ${escapeHtml(info.label)}</span>`;
+  }).join('');
   return `<div class="profile-head">
       <span class="avatar">${escapeHtml(initialOf(user.name))}</span>
       <div>
@@ -48,17 +53,20 @@ function adminCardHtml(user) {
 function profileCardHtml(user, affinities) {
   if (user.role === ROLES.MANAGER) return organizationCardHtml(user);
   if (user.role === ROLES.ADMIN) return adminCardHtml(user);
-  const bars = affinities.slice(0, TOP_AFFINITIES).map(({ key, score }) => `
+  const bars = affinities.slice(0, TOP_AFFINITIES).map(({ key, score }) => {
+    const info = INTERESTS[key] ?? { emoji: '✨', label: 'Exploración' };
+    return `
     <div class="affinity-row">
-      <div class="affinity-label"><span>${INTERESTS[key].emoji} ${INTERESTS[key].label}</span><span>${score}%</span></div>
-      <div class="affinity-bar"><div class="affinity-fill" style="width:${score}%"></div></div>
-    </div>`).join('');
+      <div class="affinity-label"><span>${escapeHtml(info.emoji)} ${escapeHtml(info.label)}</span><span>${escapeHtml(score)}%</span></div>
+      <div class="affinity-bar"><div class="affinity-fill" style="width:${Number(score)}%"></div></div>
+    </div>`;
+  }).join('');
 
   return `<div class="profile-head">
       <span class="avatar">${escapeHtml(initialOf(user.name))}</span>
       <div>
         <div class="profile-name">${escapeHtml(user.name)} <span class="badge badge-blue">${ROLE_LABELS[user.role]}</span></div>
-        <div class="profile-title">Perfil creativo: <b>${profileTitle(affinities)}</b> · ${escapeHtml(user.barrio)}</div>
+        <div class="profile-title">Perfil creativo: <b>${escapeHtml(profileTitle(affinities))}</b> · ${escapeHtml(user.barrio)}</div>
       </div>
     </div>
     <div class="affinity">${bars}</div>`;
@@ -116,6 +124,8 @@ function mount(section) {
     recsSection: $('#homeRecsSection', section),
     recs: $('#homeRecs', section),
     events: $('#homeEvents', section),
+    soonSection: $('#homeSoonSection', section),
+    soon: $('#homeSoon', section),
   };
 
   function render() {
@@ -127,8 +137,9 @@ function mount(section) {
     els.greeting.textContent = `Hola, ${user.name} 👋`;
     els.sub.textContent = summary.sub;
     els.profile.innerHTML = profileCardHtml(user, affinities);
-    els.cta.innerHTML = `<h3>${summary.cta.title}</h3><p>${summary.cta.text}</p><a class="btn btn-light" href="${summary.cta.href}">${summary.cta.label}</a>`;
-    els.stats.innerHTML = summary.stats.map(([value, label]) => `<div class="stat-card"><b>${value}</b><span>${label}</span></div>`).join('');
+    // Títulos, textos y hrefs del resumen son literales estáticos: se escapan igual por convención.
+    els.cta.innerHTML = `<h3>${escapeHtml(summary.cta.title)}</h3><p>${escapeHtml(summary.cta.text)}</p><a class="btn btn-light" href="${escapeHtml(summary.cta.href)}">${escapeHtml(summary.cta.label)}</a>`;
+    els.stats.innerHTML = summary.stats.map(([value, label]) => `<div class="stat-card"><b>${escapeHtml(value)}</b><span>${escapeHtml(label)}</span></div>`).join('');
 
     els.recsSection.hidden = user.role !== ROLES.CONSUMER;
     els.recs.innerHTML = buildRecommendations({ affinities })
@@ -140,10 +151,23 @@ function mount(section) {
     els.events.innerHTML = upcoming.length
       ? upcoming.map((event) => eventCard(event, content, { enroll: user.role === ROLES.CONSUMER })).join('')
       : `<div class="empty">${icon('calendar', 24)}<b>Sin eventos próximos</b>Vuelve pronto.</div>`;
+
+    const isConsumer = user.role === ROLES.CONSUMER;
+    const today = toISODate(new Date());
+    const soon = isConsumer ? publishedEvents(content).filter((event) => {
+      if (isPast(event) || !content.enrolled.includes(eventEnrollmentId(event))) return false;
+      const days = Math.round((new Date(event.date) - new Date(`${today}T00:00:00`)) / 86400000);
+      return days >= 0 && days <= 7;
+    }) : [];
+    els.soonSection.hidden = soon.length === 0;
+    els.soon.innerHTML = soon.map((event) => eventCard(event, content, { enroll: isConsumer })).join('');
   }
 
   bindEnrollment(els.recs);
   bindEnrollment(els.events);
+  bindEnrollment(els.soon);
+  bindEventDetail(els.events);
+  bindEventDetail(els.soon);
   appStore.subscribe(render);
   contentStore.subscribe(render);
   render();

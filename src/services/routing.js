@@ -14,7 +14,9 @@ export async function getWalkingRoute(from, to) {
     if (!response.ok) throw new Error(`Routing ${response.status}`);
     const data = await response.json();
     const route = data.routes?.[0];
-    if (!route) throw new Error('Sin ruta');
+    const coords = route?.geometry?.coordinates;
+    if (!route || !Array.isArray(coords) || coords.length === 0) throw new Error('Sin ruta');
+    if (!Number.isFinite(route.distance) || !Number.isFinite(route.duration)) throw new Error('Sin ruta');
     return {
       points: route.geometry.coordinates.map(([lng, lat]) => [lat, lng]),
       meters: route.distance,

@@ -1,5 +1,11 @@
 * { box-sizing: border-box; }
 
+html {
+  overflow-y: scroll;
+  scrollbar-gutter: stable;
+  scroll-behavior: smooth;
+}
+
 html, body { margin: 0; padding: 0; }
 
 body {
@@ -21,6 +27,17 @@ button { cursor: pointer; }
 :focus-visible { outline: 3px solid rgba(108, 60, 224, .45); outline-offset: 2px; }
 
 .icon { flex: none; vertical-align: middle; }
+
+/* === SCROLLBAR ESTABLE Y SUAVE (evita saltos de layout) === */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--line-strong);
+  border-radius: 999px;
+  border: 2px solid var(--bg);
+}
+::-webkit-scrollbar-thumb:hover { background: var(--purple); }
+* { scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }

@@ -10,9 +10,18 @@ import { getPlace } from '../data/places.js';
 const text = (value, max) => String(value ?? '').trim().slice(0, max);
 const fail = (error) => ({ ok: false, error });
 
+// Nota ReDoS: los tres patrones son clases fijas de longitud acotada, sin cuantificadores
+// anidados ni alternancias ambiguas: el motor avanza linealmente, sin backtracking catastrófico.
+// Además toda entrada se recorta (text/slice) ANTES de testear, para que un string gigante
+// inyectado por consola/devtools no llegue jamás a una regex.
 const PHONE_PATTERN = /^[\d\s()+-]*$/;
 const TAX_ID_PATTERN = /^[\w.\- ]*$/;
 const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+
+const EVENT_PRICE_MAX = 1000000;
+const EVENT_CAPACITY_MIN = 1;
+const EVENT_CAPACITY_MAX = 1000;
+const EVENT_DEFAULT_CAPACITY = 30;
 
 function validWebsite(value) {
   if (!value) return true;
@@ -21,6 +30,24 @@ function validWebsite(value) {
   } catch {
     return false;
   }
+}
+
+/** La regex solo fija la forma; aquí se verifica que el día exista de verdad (calendario UTC). */
+export function isRealIsoDate(iso) {
+  const parts = String(iso ?? '').slice(0, 10).split('-');
+  if (parts.length !== 3) return false;
+  const [year, month, day] = parts.map(Number);
+  if (!Number.isInteger(year) || !Number.isInteger(month) || !Number.isInteger(day)) return false;
+  if (month < 1 || month > 12 || day < 1 || day > 31) return false;
+  const date = new Date(Date.UTC(year, month - 1, day));
+  return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
+}
+
+function todayISODate() {
+  const now = new Date();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${now.getFullYear()}-${month}-${day}`;
 }
 
 export function sanitizeProfile(role, input = {}) {
@@ -65,25 +92,61 @@ export function sanitizeProfile(role, input = {}) {
   };
 }
 
-export function sanitizeEvent(input = {}) {
+export function sanitizeEvent(input = {}, { allowPast = false } = {}) {
   const title = text(input.title, 100);
   const place = getPlace(input.placeId);
   if (title.length < 3) throw new Error('El nombre del evento es demasiado corto.');
   if (!place) throw new Error('Lugar no válido.');
-  if (!ISO_DATE_PATTERN.test(String(input.date))) throw new Error('Fecha no válida.');
+  // Entrada acotada ANTES de la regex (nunca llega un string gigante al test).
+  const rawDate = String(input.date ?? '').slice(0, 10);
+  if (!ISO_DATE_PATTERN.test(rawDate) || !isRealIsoDate(rawDate)) throw new Error('Fecha no válida.');
+  // Solo la publicación directa de admin (`autoApprove`) puede fechar en pasado.
+  if (!allowPast && rawDate < todayISODate()) throw new Error('La fecha no puede ser pasada.');
+
+  // Precio/capacidad con Number + isFinite + clamp: sin regex, sin máscara de NaN con `||`.
+  // Un negativo nunca se absuelve: precio < 0 lanza, no se convierte a 0 ni a positivo.
+  const priceRaw = input.price === undefined || input.price === null || input.price === ''
+    ? 0
+    : Number(input.price);
+  if (!Number.isFinite(priceRaw) || priceRaw < 0) throw new Error('Precio no válido.');
+  const capacityRaw = input.capacity === undefined || input.capacity === null || input.capacity === ''
+    ? EVENT_DEFAULT_CAPACITY
+    : Number(input.capacity);
+  if (!Number.isFinite(capacityRaw)) throw new Error('Cupo no válido.');
+  const capacity = Math.round(capacityRaw);
+  if (capacity < EVENT_CAPACITY_MIN || capacity > EVENT_CAPACITY_MAX) {
+    throw new Error(`El cupo debe estar entre ${EVENT_CAPACITY_MIN} y ${EVENT_CAPACITY_MAX}.`);
+  }
 
   return {
     title,
     desc: text(input.desc, 300) || 'Evento comunitario en la Comuna 2.',
     placeId: place.id,
     barrio: place.barrio,
-    date: input.date,
-    price: Math.min(1000000, Math.max(0, Math.round(Number(input.price)) || 0)),
-    capacity: Math.min(1000, Math.max(1, Math.round(Number(input.capacity)) || 30)),
+    date: rawDate,
+    price: Math.min(EVENT_PRICE_MAX, Math.round(priceRaw)),
+    capacity,
+  };
+}
+
+export function sanitizeSuggestion(input = {}) {
+  const title = text(input.title, 80);
+  if (title.length < 3) throw new Error('El título de la propuesta es demasiado corto.');
+  if (!Object.hasOwn(INTERESTS, input.interestKey)) throw new Error('Categoría no válida.');
+  if (!NEIGHBORHOODS.some(({ name }) => name === input.barrio)) throw new Error('Barrio no válido.');
+  return {
+    title,
+    desc: text(input.desc, 200) || 'Propuesta de la comunidad.',
+    interestKey: input.interestKey,
+    barrio: input.barrio,
   };
 }
 
 export function sanitizeTeam(input = {}) {
+  // Capacidad fija 5 para retos creados desde la UI; las semillas `data/teams.js`
+  // usan 6 (team-1) y 5 (team-2) de forma documentada. `members: []` son los
+  // miembros reales (joins locales); los avatares iniciales de las semillas son
+  // demostrativos y se suman al total con `min(fakes + joins, capacity)`.
   return {
     icon: '✨',
     title: text(input.title, 80) || 'Nuevo reto comunitario',
